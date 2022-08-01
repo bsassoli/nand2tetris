@@ -1,0 +1,116 @@
+CHIP CPU {
+
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset==1) or continue executing
+                         // the current program (reset==0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write to M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+    PARTS:
+    // Put your code here:
+    // binary instruction fmt 
+    // 111      a           cccccc  ddd     jjj
+    // 543      2           109876  543     210 (reverse from 15 to 0)
+    // opcode   A or M      compute dest    jump
+
+    // Is opcode 1? -> C-instruction. Else A-instruction
+        
+    // bit[12]==1 use value stored in M in computation
+    // else: use value stored in A or D depending on following c-bits
+    //       (ALU knows how to select)
+
+    // bits [15] and [12]
+
+    // The first and second d-bits code whether to store 
+    // computed value in the A register and in the D register,
+    // respectively. The third d-bit codes whether to store the 
+    // computed value in M (i.e., in Memory[A]). 
+    
+    // 1. WIRE THE ALU
+        // Inputs:
+            // 1. From D-Register
+            // 2. From a MUX chossing btw A and M Register
+                // Which control does this Mux use to choose?
+                // I'd guess bit[12]. But notice that if A-register
+                // is storing an A-instruction we don't want to feed
+                // it to the ALU. So: _both_ 
+                // bit[12]==1 and bit[15]==1 --> A-register else M.
+        // Outputs: a) to OutM b) feedback to D- and A-registers        
+    ALU(x=DOut, y=AMMuxOut, 
+        zx=instruction[11], nx=instruction[10], 
+        zy=instruction[9], ny=instruction[8], 
+        f=instruction[7], no=instruction[6], 
+        out=outM, out=ALUOut, 
+        zr=ZROut, ng=NGOut);
+    And(a=instruction[15], b=instruction[12], out=AMSwitch);
+    Mux16(a=AOut, b=inM, sel=AMSwitch, out=AMMuxOut);
+    // 2. WIRE THE A-Register
+        // Inputs: from a MUX
+        // Mux chooses btw feedback from ALU and instructions
+        // So basically it chooses whether to use the A-register
+        // to store _data or instructions_.
+        // If instructions opcode is 0 it's an A-instruction. 
+        // Otherwise it's a C-instruction so we take input from ALU
+        // and send the c-bits of the instruction to the ALU (when?)
+        // But! We _don't_ want the data to be fed to the ALU if bit[12]
+        // is 1! Why? Because in that case the input comes from inM!
+        // So: b[12] And Not(b[15])
+
+        // What should _load_ be in the A-register. Same as the Mux and also 
+        // if destination is A --> so when bit[5] == 1
+    Not(in=instruction[15], out=OPCode1);
+    Mux16(a=ALUOut, b=instruction, sel=OPCode1, out=MuxToAOut);
+    Or(a=OPCode1, b=instruction[5], out=ARegisterLoad);
+    ARegister(in=MuxToAOut, load=ARegisterLoad, out=AOut, out[0..14]=addressM);
+    // 3. WIRE THE D-Register
+    And(a=instruction[4], b=instruction[15], out=DRegisterControl);
+    DRegister(in=ALUOut, load=DRegisterControl, out=DOut);
+    // 4. WIRE THE PC
+        
+        // Jump control bits logic:
+        
+        // 0 0 0 -> NO JUMP
+        // 0 0 1 -> JGT x
+        // 0 1 0 -> JEQ x
+        // 0 1 1 -> JGE x
+        // 1 0 0 -> JLT x
+        // 1 0 1 -> JNE
+        // 1 1 0 -> JLE
+        // 1 1 1 -> JMP    
+
+        // bit[0] is JGT
+        // bit[1] is JEQ
+        // bit[2] is JLT
+        
+        // If either one of these three are true then load. Why?
+            // JNE is JLT or JGT
+            // JGE is JEQ or JGT
+            // JLE is JEQ or JLT
+        // So we only need to take care of one of those
+        Not(in=NGOut, out=positive);
+        Not(in=ZROut, out=notZero);
+        And(a=positive, b=notZero, out=biggerthanzero);
+        
+        And(a=instruction[15], b=instruction[0], out=jgt);
+        And(a=instruction[15], b=instruction[1], out=jeq);
+        And(a=instruction[15], b=instruction[2], out=jlt);
+
+        And(a=jgt, b=biggerthanzero, out=lJGT);
+        And(a=jeq, b=ZROut, out=lJEQ);
+        And(a=jlt, b=NGOut, out=lJLT);
+        
+        Or(a=lJGT, b=lJEQ, out=l1);
+        Or(a=l1, b=lJLT, out=loadPC);
+
+    PC(in=AOut, load=loadPC, inc=true, reset=reset, out[0..14]=pc);
+    
+    // 5. When to fire writeM?
+        // When we have the right destination bit and a C-instruction
+    And(a=instruction[3], b=instruction[15], out=writeM);        
+    
+}

@@ -1,0 +1,16 @@
+0000000000000000
+// Select R0
+1111110000010000
+// C M     D        Put value of R0 in D
+0000000000000001
+// Select R1
+1111000010010000
+// C M D+M D        Put value of D+R1 in D
+0000000000000010
+// Select R2
+1110001100001000
+// C A D   RAM[A]   Put value D in RAM[2]
+0000000000000110
+// Select R6
+1110101010000111
+// C A 0 JMP        Jump to A[6]        
