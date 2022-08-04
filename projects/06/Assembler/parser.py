@@ -169,7 +169,7 @@ def main():
     for _, instr in enumerate(inlines):
         parsed = parse(instr, CMP_TABLE, DST_TABLE, JMP_TABLE, symbol_map)
         outlines.append(parsed + "\n")
-    destination_file = os.path.join("out", filename + ".hack")
+    destination_file = filename + ".hack"
     with open(destination_file, "w") as fout:
         fout.writelines(outlines)
 
