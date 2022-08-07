@@ -49,7 +49,7 @@ def preprocess(lines: List[str]) -> List[str]:
     return lines
 
 
-def translate_file(filename: Path) -> None:
+def translate_file(filename: Path, bootstrap=False) -> None:
     """translate_file Given a path to a .vm file creates a .asm translation of its contents
 
     Args:
@@ -62,7 +62,8 @@ def translate_file(filename: Path) -> None:
     dir_out_name = os.path.dirname(filename)
     write_path = os.path.join(dir_out_name, file_out_name)
     writer = CodeWriter(file_out_name, write_path)
-    writer.write_init()
+    if bootstrap:
+        writer.write_init()
     while parser.has_more_commands():
         parser.advance()
         if parser.command_type() in ["C_PUSH", "C_POP"]:
@@ -77,8 +78,12 @@ def translate_file(filename: Path) -> None:
             writer.write_goto(parser.arg1())
         if parser.command_type() == "C_IF":
             writer.write_if(parser.arg1())
-        if parser.command_type() == "C_IF":            
+        if parser.command_type() == "C_CALL":
             writer.write_call(parser.arg1(), int(parser.arg2()))
+        if parser.command_type() == "C_FUNCTION":
+            writer.write_function(parser.arg1(), int(parser.arg2()))
+        if parser.command_type() == "C_RETURN":
+            writer.write_return()
 
     print(f"Writing file: '{file_out_name}'")
     writer.close()
@@ -89,13 +94,12 @@ def main():
     operation_type = dir_or_file(path)
     print("Path for translator " + path)
     if operation_type == "file":
-        translate_file(path)
+        translate_file(path, bootstrap=False)
     else:
         for file in os.listdir(path):
             if os.path.basename(file).split(".")[1] == "vm":
                 target = os.path.join(path, file)
-                translate_file(target)
-
-
+                translate_file(target, bootstrap=True)
+        
 if __name__ == "__main__":
     main()

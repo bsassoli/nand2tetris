@@ -1,7 +1,10 @@
 class CodeWriter:
     def __init__(self, file_name, write_path) -> None:
         """Init for CodeWriter class"""
-        self.file_name = file_name
+        if "." in file_name:
+            self.file_name = file_name.split(".")[0]
+        else: 
+            self.file_name = file_name
         file = open(write_path, "w")
         self.file = file
         self.jump = 0
@@ -44,7 +47,7 @@ class CodeWriter:
             self.jump += 1
         comment = f"//{command}\n"
         self.file.write(comment)
-        outstring += "\n".join(instructions)
+        outstring = "\n".join(instructions)
         outstring += "\n"
         self.file.write(outstring)
         return outstring
@@ -194,9 +197,9 @@ class CodeWriter:
         outstring += "@256\n"
         outstring += "D=A\n"
         outstring += "@SP\n"
-        outstring += "M=D\n"
-        # outstring += "call Sys.init 0\n"
+        outstring += "M=D\n"        
         self.file.write(outstring)
+        self.write_call("Sys.init", 0)
 
     def write_label(self, label_name: str) -> None:
         """Handles translation of labels"""
@@ -224,23 +227,30 @@ class CodeWriter:
     def write_call(self, function_name: str, n_args: int) -> None:
         """Handles translation of call instructions"""
         instructions = [f"// call {function_name} {n_args}"]
-        function_name = self.file_name+"."+function_name
-        print(function_name, n_args)
-        PUSH = ["@SP",
-                "A=M"
-                "M=D",
-                "@SP",
-                "M=M+1"] # str constant that pushes what's in D-regoster on stack
+        """
+        if function_name == "Sys.init":
+            function_name = function_name
+        else:
+        """
+        function_name = self.file_name + "." + function_name
+        PUSH = [
+            "@SP",
+            "A=M",
+            "M=D",
+            "@SP",
+            "M=M+1",
+        ]  # str constant that pushes what's in D-regoster on stack
         # push retAddrLabel Using a translator-generated label
         if function_name in self.function_dict:
             ret_address_label = self.function_dict[function_name]
         else:
             ret_address_label = len(self.function_dict)
             self.function_dict[function_name] = ret_address_label
-        
-        instructions += [            
+
+        instructions += [
             f"@{function_name}$return{ret_address_label}",
-            "D=A",]
+            "D=A",
+        ]
         instructions += PUSH
         # push LCL
         instructions += ["@LCL", "D=M"]
@@ -258,22 +268,99 @@ class CodeWriter:
             "D=M",
             "@5",
             "D=D-A",
-            "@"+n_args,
+            "@" + str(n_args),
             "D=D-A",
             "@ARG",
-            "M=D"]
-        # LCL = SP
-        instructions += [
-            "@SP",
-            "D=M",
-            "@LCL",
-            "M=D"
+            "M=D",
         ]
+        # LCL = SP
+        instructions += ["@SP", "D=M", "@LCL", "M=D"]
         # goto functionName
-        instructions += f"@{function_name}"
-        instructions += "0;JMP"
+        instructions += [f"@{function_name}"]
+        instructions += ["0;JMP"]
         # (retAddrLabel) the same translator-generated label
-        instructions += f"(@{function_name}$return{ret_address_label})"
+        instructions += [f"({function_name}$return{ret_address_label})"]
         outstring = ("\n").join(instructions) + "\n"
-        print(outstring)
+        self.file.write(outstring)
+
+    def write_function(self, function_name: str, n_vars: int) -> None:
+        """Handles translation of C_FUNCTION"""
+        # generate label
+        instructions = [f"// function {function_name} {n_vars}"]
+        function_name = self.file_name + "." + function_name
+        instructions += [f"({function_name})"]
+        # repeat n_vars times:
+        # push local 0
+        while n_vars > 0:
+            instructions += ["D=0", "@SP", "A=M", "M=D", "@SP", "M=M+1"]
+            n_vars -= 1
+        outstring = ("\n").join(instructions) + "\n"
+        self.file.write(outstring)
+
+    def write_return(self) -> None:
+        """Handles translation of return command"""
+        pass
+        # endFrame = LCL 
+        instructions = [
+        # endofframe temp var =  address of LCL
+        "@LCL", 
+        "D=M",
+        "@R13",
+        "M=D",
+        # retAddr = *(endFrame - 5) // gets the return address
+        "@R13",
+        "D=M",
+        "@5",
+        "D=D-A",
+        "@R14",
+        "M=D",
+        # STAR*ARG = pop()
+        "@SP",
+        "AM=M-1",
+        "D=M",  
+        "@ARG",
+        "A=M",
+        "M=D",
+        # SP = ARG + 1
+        "@ARG",
+        "D=M+1",
+        "@SP",
+        "M=D",
+        # THAT = *(endFrame - 1) 
+        "@R13",
+        "A=M-1",
+        "D=M",
+        "@THAT",
+        "M=D",
+        # THIS = *(endFrame - 2) 
+        "@2",
+        "D=A",
+        "@R13",
+        "A=M-D",
+        "D=M",
+        "@THIS",
+        "M=D",
+        # ARG = *(endFrame - 3)
+        "@3",
+        "D=A",
+        "@R13",
+        "A=M-D",
+        "D=M",
+        "@ARG",
+        "M=D",
+        # LCL = *(endFrame - 4) 
+        "@4",
+        "D=A",
+        "@R13",
+        "A=M-D",
+        "D=M",
+        "@LCL",
+        "M=D",
+        # goto retAddr
+        "@R14",
+        "A=M",
+        "0;JMP"
+        ]
+        outstring = "// return\n"
+        outstring += ("\n").join(instructions) + "\n"
         self.file.write(outstring)
