@@ -76,6 +76,7 @@ A=M
 M=D
 @SP
 M=M+1
+//lt
 @SP
 M=M-1
 A=M
@@ -89,13 +90,17 @@ D;JLT
 A=M-1
 M=0
 (J_0)
+
+// if-goto IF_TRUE
 @SP
 AM=M-1
 D=M
 @Main.$IF_TRUE
 D;JNE
+// goto IF_FALSE
 @Main.$IF_FALSE
 0;JMP
+// label IF_TRUE
 (Main.$IF_TRUE)
 //C_PUSH argument 0
 @ARG
@@ -159,6 +164,7 @@ M=D
 @R14
 A=M
 0;JMP
+// label IF_FALSE
 (Main.$IF_FALSE)
 //C_PUSH argument 0
 @ARG
@@ -180,12 +186,14 @@ A=M
 M=D
 @SP
 M=M+1
+//sub
 @SP
 M=M-1
 A=M
 D=M
 A=A-1
 M=M-D
+
 // call Main.fibonacci 1
 @Main.Main.fibonacci$return1
 D=A
@@ -257,12 +265,14 @@ A=M
 M=D
 @SP
 M=M+1
+//sub
 @SP
 M=M-1
 A=M
 D=M
 A=A-1
 M=M-D
+
 // call Main.fibonacci 1
 @Main.Main.fibonacci$return1
 D=A
@@ -314,12 +324,14 @@ M=D
 @Main.Main.fibonacci
 0;JMP
 (Main.Main.fibonacci$return1)
+//add
 @SP
 M=M-1
 A=M
 D=M
 A=A-1
 M=D+M
+
 // return
 @LCL
 D=M
@@ -431,6 +443,8 @@ M=D
 @Sys.Main.fibonacci
 0;JMP
 (Sys.Main.fibonacci$return0)
+// label WHILE
 (Sys.$WHILE)
+// goto WHILE
 @Sys.$WHILE
 0;JMP

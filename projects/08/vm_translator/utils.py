@@ -19,8 +19,5 @@ def collate_instructions(instructions: List[str]) -> str:
 
 def write_output(outstring: str, dest: destfile) -> None:
     """Writes commands to file"""
-    print("OUTSTING!!")
-    print(outstring)
-    print(dest)
     with open(dest, "w") as destination:
         destination.write(outstring)

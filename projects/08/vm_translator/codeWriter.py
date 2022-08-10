@@ -13,7 +13,6 @@ class CodeWriter():
         self.jump = 0
         self.current_func = ""
         self.function_dict = {}
-        print("Current filename: " + self.file_name)
 
     def set_filename(self, name) -> None:
         self.file_name = name
@@ -54,8 +53,7 @@ class CodeWriter():
             self.jump += 1
         comment = f"//{command}\n"
         outstring = comment
-        outstring += collate_instructions(instructions)        
-        outstring = "\n".join(instructions)
+        outstring += collate_instructions(instructions)
         outstring += "\n"
         return outstring
 
@@ -210,18 +208,21 @@ class CodeWriter():
 
     def write_label(self, label_name: str) -> str:
         """Handles translation of labels"""
-        outstring = f"({self.file_name}.{self.current_func}${label_name})\n"
+        outstring = f"// label {label_name}\n"
+        outstring += f"({self.file_name}.{self.current_func}${label_name})\n"
         return outstring
 
     def write_goto(self, label_name: str) -> str:
         """Handles translation of goto instructions"""
-        outstring = f"@{self.file_name}.{self.current_func}${label_name}\n"
+        outstring = f"// goto {label_name}\n"
+        outstring += f"@{self.file_name}.{self.current_func}${label_name}\n"
         outstring += "0;JMP\n"
         return outstring
 
     def write_if(self, label_name: str) -> str:
         """Handles translation of if-goto instructions"""
-        instructions = [
+        instructions = [f"// if-goto {label_name}"]
+        instructions += [
             "@SP",
             "AM=M-1",
             "D=M",

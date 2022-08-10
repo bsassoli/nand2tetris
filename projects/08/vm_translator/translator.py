@@ -71,7 +71,6 @@ def translate_file(filename: Path, outname: str, bootstrap=False, is_dir=False) 
         write_path = dir_out_name + ".asm"
     else:
         write_path = file_out_name
-    print("Write path: " + write_path)
     writer = CodeWriter(outname, write_path)
     writer.set_filename(os.path.split(filename.split(".")[0])[-1])    
     out = ""    
@@ -117,8 +116,11 @@ def main():
         
         out_path = os.path.split(os.path.abspath(path))[1] + ".asm"
     
-    head, _ = os.path.split(os.path.abspath(path))
-    out_path = os.path.join(head, out_path)
+    head, tail = os.path.split(os.path.abspath(path))
+    if operation_type == "dir": 
+        out_path = os.path.join(head, tail, out_path)
+    else:
+        out_path = os.path.join(head, out_path)
     write_output(out, out_path)
     print(f"Writing file: '{out_path}'")
 
