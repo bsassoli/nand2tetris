@@ -1,30 +1,36 @@
-""" Main script that preprocess, opens files\n
+""" Main script that preprocesses, opens files\n
 and instantiates both Parser and Codewriter to perform\n
 translation from .vm to .asm.
 """
 import sys
 import os
 import pathlib
-from typing import List, Union
+from time import process_time_ns
+
+from typing import Union, Tuple, List
 from textwrap import dedent
 from parser import Parser
 from codeWriter import CodeWriter
+from utils import write_output
 
 
 Path = Union[str, pathlib.Path]
 
 
-def dir_or_file(path: Path) -> str:
+def dir_or_file(path: Path) -> Tuple[str, str]:
     """dir_or_file checks if supplied path is a directory or a file
 
-    Returns:
-        str: "dir" or "file" or raises an exception
+    Returns: 
+        Tuple[str, str]: "dir" or "file" or raises an exception and the destination basename
+       
     """
     if os.path.isdir(path):
-        return "dir"
+        name = os.path.dirname(path).split("/")[-1]        
+        return "dir", name
     if os.path.isfile(path):
-        return "file"
-    return path + "is neither a file nor a valid directory."
+        name = os.path.dirname(path).split(".")[0]
+        return "file", name
+    return path + " is neither a file nor a valid directory."
 
 
 def open_file(path: Path) -> List[str]:
@@ -49,57 +55,73 @@ def preprocess(lines: List[str]) -> List[str]:
     return lines
 
 
-def translate_file(filename: Path, bootstrap=False) -> None:
+def translate_file(filename: Path, outname: str, bootstrap=False, is_dir=False) -> None:
     """translate_file Given a path to a .vm file creates a .asm translation of its contents
 
     Args:
         filename (Path): the file to be translated
+        outname (str): the file to be written
     """
     lines = open_file(filename)
     lines = preprocess(lines)
     parser = Parser(lines)
-    file_out_name = os.path.basename(filename).split(".")[0] + ".asm"
+    file_out_name = outname + ".asm"
     dir_out_name = os.path.dirname(filename)
-    write_path = os.path.join(dir_out_name, file_out_name)
-    writer = CodeWriter(file_out_name, write_path)
-    if bootstrap:
-        writer.write_init()
+    if is_dir:
+        write_path = dir_out_name + ".asm"
+    else:
+        write_path = file_out_name
+    print("Write path: " + write_path)
+    writer = CodeWriter(outname, write_path)
+    writer.set_filename(os.path.split(filename.split(".")[0])[-1])    
+    out = ""    
+    if bootstrap:  
+        out += writer.write_init()
     while parser.has_more_commands():
         parser.advance()
         if parser.command_type() in ["C_PUSH", "C_POP"]:
             segment = parser.arg1()
             index = parser.arg2()
-            writer.write_push_pop(parser.command_type(), segment, index)
+            out += writer.write_push_pop(parser.command_type(), segment, index)
         if parser.command_type() == "C_ARITHMETIC":
-            writer.write_arithmetic(parser.current_command)
+            out += writer.write_arithmetic(parser.current_command)
         if parser.command_type() == "C_LABEL":
-            writer.write_label(parser.arg1())
+            out += writer.write_label(parser.arg1())
         if parser.command_type() == "C_GOTO":
-            writer.write_goto(parser.arg1())
+            out += writer.write_goto(parser.arg1())
         if parser.command_type() == "C_IF":
-            writer.write_if(parser.arg1())
+            out += writer.write_if(parser.arg1())
         if parser.command_type() == "C_CALL":
-            writer.write_call(parser.arg1(), int(parser.arg2()))
+            out += writer.write_call(parser.arg1(), int(parser.arg2()))
         if parser.command_type() == "C_FUNCTION":
-            writer.write_function(parser.arg1(), int(parser.arg2()))
+            out += writer.write_function(parser.arg1(), int(parser.arg2()))
         if parser.command_type() == "C_RETURN":
-            writer.write_return()
-
-    print(f"Writing file: '{file_out_name}'")
-    writer.close()
+            out += writer.write_return()
+    return out
 
 
 def main():
     path = sys.argv[1]
-    operation_type = dir_or_file(path)
-    print("Path for translator " + path)
+    operation_type, outname = dir_or_file(path)
+    out = ""
     if operation_type == "file":
-        translate_file(path, bootstrap=False)
+        out += translate_file(path, outname, bootstrap=False, is_dir=False)
+        out_path = os.path.basename(path).split(".")[0] +".asm"
     else:
-        for file in os.listdir(path):
-            if os.path.basename(file).split(".")[1] == "vm":
+        boostrap = True
+        for file in os.listdir(path):            
+            if os.path.basename(file).split(".")[1] == "vm":                
                 target = os.path.join(path, file)
-                translate_file(target, bootstrap=True)
+                out += translate_file(target, outname, bootstrap=boostrap, is_dir=True)
+                boostrap = False
         
+        out_path = os.path.split(os.path.abspath(path))[1] + ".asm"
+    
+    head, _ = os.path.split(os.path.abspath(path))
+    out_path = os.path.join(head, out_path)
+    write_output(out, out_path)
+    print(f"Writing file: '{out_path}'")
+
+
 if __name__ == "__main__":
     main()
