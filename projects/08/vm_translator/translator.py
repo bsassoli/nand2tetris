@@ -55,7 +55,7 @@ def preprocess(lines: List[str]) -> List[str]:
     return lines
 
 
-def translate_file(filename: Path, outname: str, bootstrap=False, is_dir=False) -> None:
+def translate_file(filename: Path, outname: str, bootstrap:bool=False, is_dir:bool=False, function_count:int=1) -> None:
     """translate_file Given a path to a .vm file creates a .asm translation of its contents
 
     Args:
@@ -71,13 +71,17 @@ def translate_file(filename: Path, outname: str, bootstrap=False, is_dir=False) 
         write_path = dir_out_name + ".asm"
     else:
         write_path = file_out_name
-    writer = CodeWriter(outname, write_path)
+    writer = CodeWriter(outname, write_path, function_count)
     writer.set_filename(os.path.split(filename.split(".")[0])[-1])    
     out = ""    
+    print("Function count: " + str(writer.function_count))
     if bootstrap:  
         out += writer.write_init()
+    print("Function count: " + str(writer.function_count))
     while parser.has_more_commands():
         parser.advance()
+        print(parser.current_command + "\tFunction count: " + str(writer.function_count))
+        
         if parser.command_type() in ["C_PUSH", "C_POP"]:
             segment = parser.arg1()
             index = parser.arg2()
@@ -96,7 +100,7 @@ def translate_file(filename: Path, outname: str, bootstrap=False, is_dir=False) 
             out += writer.write_function(parser.arg1(), int(parser.arg2()))
         if parser.command_type() == "C_RETURN":
             out += writer.write_return()
-    return out
+    return out, writer.function_count
 
 
 def main():
@@ -104,15 +108,19 @@ def main():
     operation_type, outname = dir_or_file(path)
     out = ""
     if operation_type == "file":
-        out += translate_file(path, outname, bootstrap=False, is_dir=False)
+        out += translate_file(path, outname, bootstrap=False, is_dir=False, function_count=1)[0]
         out_path = os.path.basename(path).split(".")[0] +".asm"
     else:
         boostrap = True
+        prev_function_count = 1
         for file in os.listdir(path):            
             if os.path.basename(file).split(".")[1] == "vm":                
                 target = os.path.join(path, file)
-                out += translate_file(target, outname, bootstrap=boostrap, is_dir=True)
+                new, new_function_count = translate_file(
+                    target, outname, bootstrap=boostrap, is_dir=True, function_count=prev_function_count)
+                out += new
                 boostrap = False
+                prev_function_count = new_function_count
         
         out_path = os.path.split(os.path.abspath(path))[1] + ".asm"
     

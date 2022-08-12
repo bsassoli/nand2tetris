@@ -26,7 +26,7 @@ M=M+1
 @SP
 A=M-1
 D=M
-@StaticTest.asm.8
+@.8
 M=D
 @SP
 M=M-1
@@ -34,7 +34,7 @@ M=M-1
 @SP
 A=M-1
 D=M
-@StaticTest.asm.3
+@.3
 M=D
 @SP
 M=M-1
@@ -42,12 +42,12 @@ M=M-1
 @SP
 A=M-1
 D=M
-@StaticTest.asm.1
+@.1
 M=D
 @SP
 M=M-1
 //C_PUSH static 3
-@StaticTest.asm.3
+@.3
 D=M
 @SP
 A=M
@@ -55,7 +55,7 @@ M=D
 @SP
 M=M+1
 //C_PUSH static 1
-@StaticTest.asm.1
+@.1
 D=M
 @SP
 A=M
@@ -70,7 +70,7 @@ D=M
 A=A-1
 M=M-D
 //C_PUSH static 8
-@StaticTest.asm.8
+@.8
 D=M
 @SP
 A=M

@@ -1,8 +1,3 @@
-// init
-@256
-D=A
-@SP
-M=D
 //C_PUSH constant 0
 @0
 D=A
@@ -29,7 +24,8 @@ M=D
 @R13
 A=M
 M=D
-(BasicLoop.asm.$LOOP_START)
+// label LOOP_START
+(BasicLoop$LOOP_START)
 //C_PUSH argument 0
 @ARG
 D=M
@@ -38,7 +34,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
@@ -50,11 +45,9 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
-//add
 //add
 @SP
 M=M-1
@@ -88,7 +81,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
@@ -100,7 +92,6 @@ A=M
 M=D
 @SP
 M=M+1
-//sub
 //sub
 @SP
 M=M-1
@@ -134,14 +125,14 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
+// if-goto LOOP_START
 @SP
 AM=M-1
 D=M
-@BasicLoop.asm.$LOOP_START
+@BasicLoop$LOOP_START
 D;JNE
 //C_PUSH local 0
 @LCL
@@ -151,7 +142,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1

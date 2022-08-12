@@ -3,7 +3,7 @@ from utils import collate_instructions
 # If is_directory
 
 class CodeWriter():
-    def __init__(self, file_name, write_path) -> None:
+    def __init__(self, file_name, write_path, function_count) -> None:
         """Init for CodeWriter class"""
         if "." in file_name:
             self.file_name = file_name.split(".")[0]
@@ -12,7 +12,7 @@ class CodeWriter():
         #self.file = open(write_path, "w")
         self.jump = 0
         self.current_func = ""
-        self.function_dict = {}
+        self.function_count = function_count
 
     def set_filename(self, name) -> None:
         self.file_name = name
@@ -54,7 +54,6 @@ class CodeWriter():
         comment = f"//{command}\n"
         outstring = comment
         outstring += collate_instructions(instructions)
-        outstring += "\n"
         return outstring
 
     def write_push_pop(self, command: str, segment: str, index: int) -> str:
@@ -116,7 +115,6 @@ class CodeWriter():
                     "D=M",
                     "@SP",
                     "A=M",
-                    "M=A",
                     "M=D",
                     "@SP",
                     "M=M+1",
@@ -209,13 +207,13 @@ class CodeWriter():
     def write_label(self, label_name: str) -> str:
         """Handles translation of labels"""
         outstring = f"// label {label_name}\n"
-        outstring += f"({self.file_name}.{self.current_func}${label_name})\n"
+        outstring += f"({self.file_name}${label_name})\n"
         return outstring
 
     def write_goto(self, label_name: str) -> str:
         """Handles translation of goto instructions"""
         outstring = f"// goto {label_name}\n"
-        outstring += f"@{self.file_name}.{self.current_func}${label_name}\n"
+        outstring += f"@{self.file_name}${label_name}\n"
         outstring += "0;JMP\n"
         return outstring
 
@@ -226,7 +224,7 @@ class CodeWriter():
             "@SP",
             "AM=M-1",
             "D=M",
-            f"@{self.file_name}.{self.current_func}${label_name}",
+            f"@{self.file_name}${label_name}",
             "D;JNE",
         ]
         outstring = collate_instructions(instructions)
@@ -235,7 +233,6 @@ class CodeWriter():
     def write_call(self, function_name: str, n_args: int) -> str:
         """Handles translation of call instructions"""
         instructions = [f"// call {function_name} {n_args}"]
-        function_name = self.file_name + "." + function_name
         PUSH = [
             "@SP",
             "A=M",
@@ -244,14 +241,11 @@ class CodeWriter():
             "M=M+1",
         ]  # str constant that pushes what's in D-regoster on stack
         # push retAddrLabel Using a translator-generated label
-        if function_name in self.function_dict:
-            ret_address_label = self.function_dict[function_name]
-        else:
-            ret_address_label = len(self.function_dict)
-            self.function_dict[function_name] = ret_address_label
+        
+        ret_address_label = str(self.function_count)
 
         instructions += [
-            f"@{function_name}$return{ret_address_label}",
+            f"@{function_name}${ret_address_label}",
             "D=A",
         ]
         instructions += PUSH
@@ -267,37 +261,40 @@ class CodeWriter():
         # push THAT
         instructions += ["@THAT", "D=M"]
         instructions += PUSH
-        # ARG = SP-5-nArgs
+        
+        # LCL = SP
         instructions += [
             "@SP",
             "D=M",
-            "@5",
-            "D=D-A",
-            "@" + str(n_args),
-            "D=D-A",
-            "@ARG",
+            "@LCL",
             "M=D",
         ]
-        # LCL = SP
-        instructions += ["@SP", "D=M", "@LCL", "M=D"]
+        # ARG = SP-5-nArgs
+        instructions += [
+            f"@{str(n_args + 5)}",
+            "D = D-A",
+            "@ARG",
+            "M=D"
+        ]
         # goto functionName
         instructions += [f"@{function_name}"]
         instructions += ["0;JMP"]
         # (retAddrLabel) the same translator-generated label
-        instructions += [f"({function_name}$return{ret_address_label})"]
+        instructions += [f"({function_name}${ret_address_label})"]
         outstring = collate_instructions(instructions)
+        self.function_count += 1
         return outstring
 
     def write_function(self, function_name: str, n_vars: int) -> str:
         """Handles translation of C_FUNCTION"""
         # generate label
         instructions = [f"// function {function_name} {n_vars}"]
-        function_name = self.file_name + "." + function_name
+        # function_name = self.file_name + "." + function_name
         instructions += [f"({function_name})"]
         # repeat n_vars times:
         # push local 0
         while n_vars > 0:
-            instructions += ["D=0", "@SP", "A=M", "M=D", "@SP", "M=M+1"]
+            instructions += ["@SP", "A=M", "M=0", "@SP", "M=M+1"]
             n_vars -= 1
         outstring = collate_instructions(instructions)
         return outstring
@@ -332,7 +329,8 @@ class CodeWriter():
             "M=D",
             # THAT = *(endFrame - 1)
             "@R13",
-            "A=M-1",
+            "D=M-1",
+            "A=D",
             "D=M",
             "@THAT",
             "M=D",
@@ -340,7 +338,8 @@ class CodeWriter():
             "@2",
             "D=A",
             "@R13",
-            "A=M-D",
+            "D=M-D",
+            "A=D",
             "D=M",
             "@THIS",
             "M=D",
@@ -348,7 +347,8 @@ class CodeWriter():
             "@3",
             "D=A",
             "@R13",
-            "A=M-D",
+            "D=M-D",
+            "A=D",
             "D=M",
             "@ARG",
             "M=D",
@@ -356,7 +356,8 @@ class CodeWriter():
             "@4",
             "D=A",
             "@R13",
-            "A=M-D",
+            "D=M-D",
+            "A=D",
             "D=M",
             "@LCL",
             "M=D",

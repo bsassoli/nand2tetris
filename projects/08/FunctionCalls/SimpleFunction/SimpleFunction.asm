@@ -1,15 +1,13 @@
 // function SimpleFunction.test 2
-(SimpleFunction.SimpleFunction.test)
-D=0
+(SimpleFunction.test)
 @SP
 A=M
-M=D
+M=0
 @SP
 M=M+1
-D=0
 @SP
 A=M
-M=D
+M=0
 @SP
 M=M+1
 //C_PUSH local 0
@@ -20,7 +18,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
@@ -32,7 +29,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
@@ -43,12 +39,10 @@ A=M
 D=M
 A=A-1
 M=D+M
-
 //not
 @SP
 A=M-1
 M=!M
-
 //C_PUSH argument 0
 @ARG
 D=M
@@ -57,7 +51,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
@@ -68,7 +61,6 @@ A=M
 D=M
 A=A-1
 M=D+M
-
 //C_PUSH argument 1
 @ARG
 D=M
@@ -77,7 +69,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
@@ -88,7 +79,6 @@ A=M
 D=M
 A=A-1
 M=M-D
-
 // return
 @LCL
 D=M
@@ -111,28 +101,32 @@ D=M+1
 @SP
 M=D
 @R13
-A=M-1
+D=M-1
+A=D
 D=M
 @THAT
 M=D
 @2
 D=A
 @R13
-A=M-D
+D=M-D
+A=D
 D=M
 @THIS
 M=D
 @3
 D=A
 @R13
-A=M-D
+D=M-D
+A=D
 D=M
 @ARG
 M=D
 @4
 D=A
 @R13
-A=M-D
+D=M-D
+A=D
 D=M
 @LCL
 M=D

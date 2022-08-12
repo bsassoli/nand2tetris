@@ -111,7 +111,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
@@ -130,7 +129,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1

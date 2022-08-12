@@ -4,7 +4,7 @@ D=A
 @SP
 M=D
 // call Sys.init 0
-@Sys.Sys.init$return0
+@Sys.init$1
 D=A
 @SP
 A=M
@@ -41,21 +41,17 @@ M=D
 M=M+1
 @SP
 D=M
-@5
-D=D-A
-@0
-D=D-A
-@ARG
-M=D
-@SP
-D=M
 @LCL
 M=D
-@Sys.Sys.init
+@5
+D = D-A
+@ARG
+M=D
+@Sys.init
 0;JMP
-(Sys.Sys.init$return0)
+(Sys.init$1)
 // function Sys.init 0
-(Sys.Sys.init)
+(Sys.init)
 //C_PUSH constant 4000
 @4000
 D=A
@@ -87,7 +83,7 @@ D=M
 @THAT
 M=D
 // call Sys.main 0
-@Sys.Sys.main$return1
+@Sys.main$2
 D=A
 @SP
 A=M
@@ -124,19 +120,15 @@ M=D
 M=M+1
 @SP
 D=M
-@5
-D=D-A
-@0
-D=D-A
-@ARG
-M=D
-@SP
-D=M
 @LCL
 M=D
-@Sys.Sys.main
+@5
+D = D-A
+@ARG
+M=D
+@Sys.main
 0;JMP
-(Sys.Sys.main$return1)
+(Sys.main$2)
 //C_POP temp 1
 @5
 D=A
@@ -155,39 +147,36 @@ M=D
 @R13
 A=M
 M=D
-(Sys.$LOOP)
-@Sys.$LOOP
+// label LOOP
+(Sys$LOOP)
+// goto LOOP
+@Sys$LOOP
 0;JMP
 // function Sys.main 5
-(Sys.Sys.main)
-D=0
+(Sys.main)
 @SP
 A=M
-M=D
+M=0
 @SP
 M=M+1
-D=0
 @SP
 A=M
-M=D
+M=0
 @SP
 M=M+1
-D=0
 @SP
 A=M
-M=D
+M=0
 @SP
 M=M+1
-D=0
 @SP
 A=M
-M=D
+M=0
 @SP
 M=M+1
-D=0
 @SP
 A=M
-M=D
+M=0
 @SP
 M=M+1
 //C_PUSH constant 4001
@@ -307,7 +296,7 @@ M=D
 @SP
 M=M+1
 // call Sys.add12 1
-@Sys.Sys.add12$return2
+@Sys.add12$3
 D=A
 @SP
 A=M
@@ -344,19 +333,15 @@ M=D
 M=M+1
 @SP
 D=M
-@5
-D=D-A
-@1
-D=D-A
-@ARG
-M=D
-@SP
-D=M
 @LCL
 M=D
-@Sys.Sys.add12
+@6
+D = D-A
+@ARG
+M=D
+@Sys.add12
 0;JMP
-(Sys.Sys.add12$return2)
+(Sys.add12$3)
 //C_POP temp 0
 @5
 D=A
@@ -383,7 +368,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
@@ -395,7 +379,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
@@ -407,7 +390,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
@@ -419,7 +401,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
@@ -431,28 +412,31 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
+//add
 @SP
 M=M-1
 A=M
 D=M
 A=A-1
 M=D+M
+//add
 @SP
 M=M-1
 A=M
 D=M
 A=A-1
 M=D+M
+//add
 @SP
 M=M-1
 A=M
 D=M
 A=A-1
 M=D+M
+//add
 @SP
 M=M-1
 A=M
@@ -481,28 +465,32 @@ D=M+1
 @SP
 M=D
 @R13
-A=M-1
+D=M-1
+A=D
 D=M
 @THAT
 M=D
 @2
 D=A
 @R13
-A=M-D
+D=M-D
+A=D
 D=M
 @THIS
 M=D
 @3
 D=A
 @R13
-A=M-D
+D=M-D
+A=D
 D=M
 @ARG
 M=D
 @4
 D=A
 @R13
-A=M-D
+D=M-D
+A=D
 D=M
 @LCL
 M=D
@@ -510,7 +498,7 @@ M=D
 A=M
 0;JMP
 // function Sys.add12 0
-(Sys.Sys.add12)
+(Sys.add12)
 //C_PUSH constant 4002
 @4002
 D=A
@@ -549,7 +537,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
@@ -561,6 +548,7 @@ A=M
 M=D
 @SP
 M=M+1
+//add
 @SP
 M=M-1
 A=M
@@ -589,28 +577,32 @@ D=M+1
 @SP
 M=D
 @R13
-A=M-1
+D=M-1
+A=D
 D=M
 @THAT
 M=D
 @2
 D=A
 @R13
-A=M-D
+D=M-D
+A=D
 D=M
 @THIS
 M=D
 @3
 D=A
 @R13
-A=M-D
+D=M-D
+A=D
 D=M
 @ARG
 M=D
 @4
 D=A
 @R13
-A=M-D
+D=M-D
+A=D
 D=M
 @LCL
 M=D

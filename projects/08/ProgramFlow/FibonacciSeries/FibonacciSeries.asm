@@ -1,8 +1,3 @@
-// init
-@256
-D=A
-@SP
-M=D
 //C_PUSH argument 1
 @ARG
 D=M
@@ -11,7 +6,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
@@ -82,7 +76,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
@@ -94,7 +87,6 @@ A=M
 M=D
 @SP
 M=M+1
-//sub
 //sub
 @SP
 M=M-1
@@ -120,7 +112,8 @@ M=D
 @R13
 A=M
 M=D
-(FibonacciSeries.asm.$MAIN_LOOP_START)
+// label MAIN_LOOP_START
+(FibonacciSeries$MAIN_LOOP_START)
 //C_PUSH argument 0
 @ARG
 D=M
@@ -129,18 +122,20 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
+// if-goto COMPUTE_ELEMENT
 @SP
 AM=M-1
 D=M
-@FibonacciSeries.asm.$COMPUTE_ELEMENT
+@FibonacciSeries$COMPUTE_ELEMENT
 D;JNE
-@FibonacciSeries.asm.$END_PROGRAM
+// goto END_PROGRAM
+@FibonacciSeries$END_PROGRAM
 0;JMP
-(FibonacciSeries.asm.$COMPUTE_ELEMENT)
+// label COMPUTE_ELEMENT
+(FibonacciSeries$COMPUTE_ELEMENT)
 //C_PUSH that 0
 @THAT
 D=M
@@ -149,7 +144,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
@@ -161,11 +155,9 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
-//add
 //add
 @SP
 M=M-1
@@ -208,7 +200,6 @@ M=D
 @SP
 M=M+1
 //add
-//add
 @SP
 M=M-1
 A=M
@@ -230,7 +221,6 @@ A=D+A
 D=M
 @SP
 A=M
-M=A
 M=D
 @SP
 M=M+1
@@ -242,7 +232,6 @@ A=M
 M=D
 @SP
 M=M+1
-//sub
 //sub
 @SP
 M=M-1
@@ -268,6 +257,8 @@ M=D
 @R13
 A=M
 M=D
-@FibonacciSeries.asm.$MAIN_LOOP_START
+// goto MAIN_LOOP_START
+@FibonacciSeries$MAIN_LOOP_START
 0;JMP
-(FibonacciSeries.asm.$END_PROGRAM)
+// label END_PROGRAM
+(FibonacciSeries$END_PROGRAM)
