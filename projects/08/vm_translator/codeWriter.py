@@ -38,17 +38,28 @@ class CodeWriter():
             instructions = [
                 "@SP",
                 "M=M-1",
+                "@SP",
                 "A=M",
                 "D=M",
-                "A=A-1",
+                "@SP",
+                "M=M-1",
+                "@SP",
+                "A=M",
                 "D=M-D",
-                "M=-1",
-                f"@J_{self.jump}",
+                f"@BOOL_START_{self.jump}",
                 f"D;{comparisons[command]}",
                 "@SP",
-                "A=M-1",
+                "A=M",
                 "M=0",
-                f"(J_{self.jump})",
+                f"@BOOL_END_{self.jump}",
+                "0;JMP",
+                f"(BOOL_START_{self.jump})",
+                "@SP",
+                "A=M",
+                "M=-1",
+                f"(BOOL_END_{self.jump})",
+                "@SP",
+                "M=M+1"
             ]
             self.jump += 1
         comment = f"//{command}\n"
@@ -165,18 +176,15 @@ class CodeWriter():
                     f"@{segment}",
                     "D=M",
                     f"@{index}",
-                    "D=D+A",
+                    "A=D+A",
+                    "D=A",
                     "@R13",
                     "M=D",
                     "@SP",
                     "M=M-1",
-                    "D=M",
-                    "@R15",
-                    "M=D",
+                    "@SP",
                     "A=M",
                     "D=M",
-                    "M=D",
-                    "@R13",
                     "A=M",
                     "M=D",
                 ]
@@ -207,13 +215,19 @@ class CodeWriter():
     def write_label(self, label_name: str) -> str:
         """Handles translation of labels"""
         outstring = f"// label {label_name}\n"
-        outstring += f"({self.file_name}${label_name})\n"
+        if self.current_func:
+            outstring += f"({self.current_func}${label_name})\n"
+        else:
+            outstring += f"({label_name})\n"
         return outstring
 
     def write_goto(self, label_name: str) -> str:
         """Handles translation of goto instructions"""
         outstring = f"// goto {label_name}\n"
-        outstring += f"@{self.file_name}${label_name}\n"
+        if self.current_func:
+            outstring += f"@{self.current_func}${label_name}\n"
+        else:
+            outstring += f"@{label_name}\n"
         outstring += "0;JMP\n"
         return outstring
 
@@ -222,11 +236,15 @@ class CodeWriter():
         instructions = [f"// if-goto {label_name}"]
         instructions += [
             "@SP",
-            "AM=M-1",
-            "D=M",
-            f"@{self.file_name}${label_name}",
-            "D;JNE",
-        ]
+            "M=M-1",
+            "@SP",
+            "A=M",
+            "D=M"]
+        if self.current_func:
+            instructions += [f"@{self.current_func}${label_name}"]
+        else:
+            instructions += [f"@{label_name}"]
+        instructions += ["D;JNE"]
         outstring = collate_instructions(instructions)
         return outstring
 
@@ -272,7 +290,7 @@ class CodeWriter():
         # ARG = SP-5-nArgs
         instructions += [
             f"@{str(n_args + 5)}",
-            "D = D-A",
+            "D=D-A",
             "@ARG",
             "M=D"
         ]
@@ -287,6 +305,7 @@ class CodeWriter():
 
     def write_function(self, function_name: str, n_vars: int) -> str:
         """Handles translation of C_FUNCTION"""
+        self.current_func = function_name
         # generate label
         instructions = [f"// function {function_name} {n_vars}"]
         # function_name = self.file_name + "." + function_name
@@ -302,6 +321,7 @@ class CodeWriter():
     def write_return(self) -> str:
         """Handles translation of return command"""
         # endFrame = LCL
+        outstring = "// return\n"
         instructions = [
             # endofframe temp var =  address of LCL
             "@LCL",
@@ -313,59 +333,33 @@ class CodeWriter():
             "D=M",
             "@5",
             "D=D-A",
+            "A=D",
+            "D=M",
             "@R14",
             "M=D",
             # STAR*ARG = pop()
             "@SP",
-            "AM=M-1",
+            "M=M-1",
+            "@SP",
+            "A=M",
             "D=M",
             "@ARG",
             "A=M",
             "M=D",
             # SP = ARG + 1
             "@ARG",
-            "D=M+1",
+            "D=M",
             "@SP",
-            "M=D",
-            # THAT = *(endFrame - 1)
-            "@R13",
-            "D=M-1",
-            "A=D",
-            "D=M",
-            "@THAT",
-            "M=D",
-            # THIS = *(endFrame - 2)
-            "@2",
-            "D=A",
-            "@R13",
-            "D=M-D",
-            "A=D",
-            "D=M",
-            "@THIS",
-            "M=D",
-            # ARG = *(endFrame - 3)
-            "@3",
-            "D=A",
-            "@R13",
-            "D=M-D",
-            "A=D",
-            "D=M",
-            "@ARG",
-            "M=D",
-            # LCL = *(endFrame - 4)
-            "@4",
-            "D=A",
-            "@R13",
-            "D=M-D",
-            "A=D",
-            "D=M",
-            "@LCL",
-            "M=D",
-            # goto retAddr
-            "@R14",
-            "A=M",
-            "0;JMP",
+            "M=D+1"               
         ]
-        outstring = "// return\n"
+        for ix, addr in enumerate(["@THAT", "@THIS", "@ARG", "@LCL"], start=1):
+            reset = ["@R13", "D=M"]
+            reset += ["@" + str(ix)]
+            reset += ["D=D-A", "A=D", "D=M"]
+            reset += [addr]
+            reset += ["M=D"]    
+            instructions += reset
+        # goto retAddr
+        instructions += ["@R14", "A=M", "0;JMP"]
         outstring += collate_instructions(instructions)
         return outstring

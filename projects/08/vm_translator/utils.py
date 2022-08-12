@@ -1,6 +1,7 @@
 """helper functions for CodeWriter and Parser classes"""
 import pathlib
 from typing import List, Union
+
 destfile = Union[str, pathlib.Path]
 
 

@@ -10,22 +10,19 @@ M=M+1
 @LCL
 D=M
 @0
-D=D+A
+A=D+A
+D=A
 @R13
 M=D
 @SP
 M=M-1
-D=M
-@R15
-M=D
+@SP
 A=M
 D=M
-M=D
-@R13
 A=M
 M=D
 // label LOOP_START
-(BasicLoop$LOOP_START)
+(LOOP_START)
 //C_PUSH argument 0
 @ARG
 D=M
@@ -59,18 +56,15 @@ M=D+M
 @LCL
 D=M
 @0
-D=D+A
+A=D+A
+D=A
 @R13
 M=D
 @SP
 M=M-1
-D=M
-@R15
-M=D
+@SP
 A=M
 D=M
-M=D
-@R13
 A=M
 M=D
 //C_PUSH argument 0
@@ -103,18 +97,15 @@ M=M-D
 @ARG
 D=M
 @0
-D=D+A
+A=D+A
+D=A
 @R13
 M=D
 @SP
 M=M-1
-D=M
-@R15
-M=D
+@SP
 A=M
 D=M
-M=D
-@R13
 A=M
 M=D
 //C_PUSH argument 0
@@ -130,9 +121,11 @@ M=D
 M=M+1
 // if-goto LOOP_START
 @SP
-AM=M-1
+M=M-1
+@SP
+A=M
 D=M
-@BasicLoop$LOOP_START
+@LOOP_START
 D;JNE
 //C_PUSH local 0
 @LCL
