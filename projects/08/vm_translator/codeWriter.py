@@ -1,22 +1,21 @@
 from utils import collate_instructions
 
-# If is_directory
 
-class CodeWriter():
-    def __init__(self, file_name, write_path, function_count) -> None:
+class CodeWriter:
+    def __init__(self, file_name, function_count) -> None:
         """Init for CodeWriter class"""
         if "." in file_name:
             self.file_name = file_name.split(".")[0]
         else:
             self.file_name = file_name
-        #self.file = open(write_path, "w")
+        # self.file = open(write_path, "w")
         self.jump = 0
         self.current_func = ""
         self.function_count = function_count
 
     def set_filename(self, name) -> None:
         self.file_name = name
-    
+
     def write_arithmetic(self, command: str) -> str:
         """Handles translation arithmetic commands"""
         if command in ["add", "sub"]:
@@ -59,7 +58,7 @@ class CodeWriter():
                 "M=-1",
                 f"(BOOL_END_{self.jump})",
                 "@SP",
-                "M=M+1"
+                "M=M+1",
             ]
             self.jump += 1
         comment = f"//{command}\n"
@@ -185,6 +184,7 @@ class CodeWriter():
                     "@SP",
                     "A=M",
                     "D=M",
+                    "@R13",
                     "A=M",
                     "M=D",
                 ]
@@ -196,18 +196,9 @@ class CodeWriter():
         outstring += collate_instructions(instructions)
         return outstring
 
-    def close(self) -> None:
-        """Closes file when translation is completed"""
-        self.file.close()
-
     def write_init(self) -> str:
         """Initializes .asm file with bootstrap code"""
-        instructions = [
-        "// init", 
-        "@256", 
-        "D=A",
-        "@SP",
-        "M=D"]
+        instructions = ["// init", "@256", "D=A", "@SP", "M=D"]
         outstring = collate_instructions(instructions)
         outstring += self.write_call("Sys.init", 0)
         return outstring
@@ -234,12 +225,7 @@ class CodeWriter():
     def write_if(self, label_name: str) -> str:
         """Handles translation of if-goto instructions"""
         instructions = [f"// if-goto {label_name}"]
-        instructions += [
-            "@SP",
-            "M=M-1",
-            "@SP",
-            "A=M",
-            "D=M"]
+        instructions += ["@SP", "M=M-1", "@SP", "A=M", "D=M"]
         if self.current_func:
             instructions += [f"@{self.current_func}${label_name}"]
         else:
@@ -259,7 +245,7 @@ class CodeWriter():
             "M=M+1",
         ]  # str constant that pushes what's in D-regoster on stack
         # push retAddrLabel Using a translator-generated label
-        
+
         ret_address_label = str(self.function_count)
 
         instructions += [
@@ -279,7 +265,7 @@ class CodeWriter():
         # push THAT
         instructions += ["@THAT", "D=M"]
         instructions += PUSH
-        
+
         # LCL = SP
         instructions += [
             "@SP",
@@ -288,12 +274,7 @@ class CodeWriter():
             "M=D",
         ]
         # ARG = SP-5-nArgs
-        instructions += [
-            f"@{str(n_args + 5)}",
-            "D=D-A",
-            "@ARG",
-            "M=D"
-        ]
+        instructions += [f"@{str(n_args + 5)}", "D=D-A", "@ARG", "M=D"]
         # goto functionName
         instructions += [f"@{function_name}"]
         instructions += ["0;JMP"]
@@ -318,7 +299,7 @@ class CodeWriter():
         outstring = collate_instructions(instructions)
         return outstring
 
-    def write_return(self) -> str:
+    def write_return() -> str:
         """Handles translation of return command"""
         # endFrame = LCL
         outstring = "// return\n"
@@ -350,14 +331,14 @@ class CodeWriter():
             "@ARG",
             "D=M",
             "@SP",
-            "M=D+1"               
+            "M=D+1",
         ]
         for ix, addr in enumerate(["@THAT", "@THIS", "@ARG", "@LCL"], start=1):
             reset = ["@R13", "D=M"]
             reset += ["@" + str(ix)]
             reset += ["D=D-A", "A=D", "D=M"]
             reset += [addr]
-            reset += ["M=D"]    
+            reset += ["M=D"]
             instructions += reset
         # goto retAddr
         instructions += ["@R14", "A=M", "0;JMP"]

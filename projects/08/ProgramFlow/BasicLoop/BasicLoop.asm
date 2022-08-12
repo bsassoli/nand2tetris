@@ -19,6 +19,7 @@ M=M-1
 @SP
 A=M
 D=M
+@R13
 A=M
 M=D
 // label LOOP_START
@@ -65,6 +66,7 @@ M=M-1
 @SP
 A=M
 D=M
+@R13
 A=M
 M=D
 //C_PUSH argument 0
@@ -106,6 +108,7 @@ M=M-1
 @SP
 A=M
 D=M
+@R13
 A=M
 M=D
 //C_PUSH argument 0

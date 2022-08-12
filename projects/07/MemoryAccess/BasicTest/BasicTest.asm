@@ -19,6 +19,7 @@ M=M-1
 @SP
 A=M
 D=M
+@R13
 A=M
 M=D
 //C_PUSH constant 21
@@ -50,6 +51,7 @@ M=M-1
 @SP
 A=M
 D=M
+@R13
 A=M
 M=D
 //C_POP argument 1
@@ -65,6 +67,7 @@ M=M-1
 @SP
 A=M
 D=M
+@R13
 A=M
 M=D
 //C_PUSH constant 36
@@ -88,6 +91,7 @@ M=M-1
 @SP
 A=M
 D=M
+@R13
 A=M
 M=D
 //C_PUSH constant 42
@@ -119,6 +123,7 @@ M=M-1
 @SP
 A=M
 D=M
+@R13
 A=M
 M=D
 //C_POP that 2
@@ -134,6 +139,7 @@ M=M-1
 @SP
 A=M
 D=M
+@R13
 A=M
 M=D
 //C_PUSH constant 510

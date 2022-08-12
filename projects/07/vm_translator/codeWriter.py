@@ -149,6 +149,8 @@ class CodeWriter():
                 instructions = ["@SP", "M=M-1", "A=M", "D=M", f"@{this_or_that}", "M=D"]
             elif segment in ["argument", "local", "this", "that"]:
                 segment = segment_dict[segment]
+                elif segment in ["argument", "local", "this", "that"]:
+                segment = segment_dict[segment]
                 instructions = [
                     f"@{segment}",
                     "D=M",

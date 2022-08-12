@@ -14,6 +14,7 @@ from utils import write_output
 
 Path = Union[str, pathlib.Path]
 
+
 def dir_or_file(path: Path) -> Tuple[str, str]:
     """dir_or_file checks if supplied path is a directory or a file
 
