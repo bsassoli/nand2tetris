@@ -12,7 +12,6 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["../../04/my\exercises/divide.asm"],
         }
     ]
 }

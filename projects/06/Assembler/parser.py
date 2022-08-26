@@ -38,9 +38,7 @@ def preprocess(lines: List[str]) -> List[str]:
     return lines
 
 
-def first_pass(
-    program: List[str], symbol_table: Dict[str, int]
-) -> Dict[str, int]:
+def first_pass(program: List[str], symbol_table: Dict[str, int]) -> Dict[str, int]:
     """first_pass constructs mappings for labels
 
     Args:
@@ -65,9 +63,7 @@ def first_pass(
     return symbol_table, program
 
 
-def second_pass(
-    program: List[str], symbol_table: Dict[str, int]
-) -> Dict[str, int]:
+def second_pass(program: List[str], symbol_table: Dict[str, int]) -> Dict[str, int]:
     """second_pass Construct mappings for variables
 
     Args:
@@ -156,7 +152,7 @@ def main():
         path = sys.argv[1]
     except IndexError:
         print("ERROR: You must provide a filename as an argument")
-        print("*"*48)
+        print("*" * 48)
     filename = os.path.basename(path).split(".")[0]
     assert filename + ".asm" in os.listdir(
         os.path.dirname(path)

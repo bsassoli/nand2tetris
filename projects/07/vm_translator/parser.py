@@ -4,9 +4,10 @@
 from typing import List
 
 
-class Parser():
+class Parser:
     """ Parser class takes a list of string and parses them
     """
+
     def __init__(self, file: List[str]):
 
         if len(file):

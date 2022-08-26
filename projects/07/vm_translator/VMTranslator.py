@@ -5,6 +5,7 @@ from textwrap import dedent
 from parser import Parser
 from codeWriter import CodeWriter
 
+
 def open_file() -> List[str]:
     """Opens file and returns list of lines"""
     try:

@@ -21,5 +21,5 @@ SYMBOL_TABLE = {
     "LCL": 1,
     "ARG": 2,
     "THIS": 3,
-    "THAT": 4
+    "THAT": 4,
 }

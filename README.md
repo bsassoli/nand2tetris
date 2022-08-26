@@ -13,7 +13,7 @@ Assignment and materials for *Build a Modern Computer from First Principles: Nan
   * Multiplexer and demultiplexers (MUX, DMUX)
   * Multi-bit buses (NOT16, AND16, OR16, MUX16, MUX4WAY16, MUX(WAY16, DMUX4WAY, DMUX8WAY)
 
-## Week 2
+### Week 2
 
 * Boolean arithmetic
 * Binary addition
@@ -21,7 +21,7 @@ Assignment and materials for *Build a Modern Computer from First Principles: Nan
 * Half-adders and full-adders
 * Bulding an ALU
 
-## Week 3
+### Week 3
 
 * Sequential logic and sequential circuirs
 * Data Flip Flops
@@ -29,10 +29,9 @@ Assignment and materials for *Build a Modern Computer from First Principles: Nan
   * Bit
   * Register
   * RAM (from 8 to 16K)
-
 * Program Counters
 
-## Week 4
+### Week 4
 
 * Machine Language
 * Hack programming
@@ -42,14 +41,14 @@ Assignment and materials for *Build a Modern Computer from First Principles: Nan
   * Screen
   * Keyboard
 
-## Week 5
+### Week 5
 
 * Von Neumann architecture
 * Fetch-execute cycle
 * CPU
 * Build: CPU, Memory, Computer
 
-## Week 6
+### Week 6
 
 * Assembly
 * Hack assembly
@@ -59,14 +58,13 @@ Assignment and materials for *Build a Modern Computer from First Principles: Nan
 
 ## PART II
 
-## Week 1
+### Week 1
 
 * Virtual machine and bytecode
 * Stack
   * stack pointer
   * push / pop
   * arithmetic instruction
-
 * Memory segments
   * local
   * static
@@ -75,3 +73,6 @@ Assignment and materials for *Build a Modern Computer from First Principles: Nan
   * temp
   * args
 * VM translator part 1
+
+### Week 2
+

@@ -1,0 +1,43 @@
+class Jonny {
+    // attributes and methods
+
+    field int location;
+    field string name;
+    field int age;
+    field bool isHungry;
+    field bool wantsCuddles;
+    field int memAddress;
+    
+    constructor Jonny new(string Aname, int Aage, bool AisHungry, bool AwantsCuddles) {
+        let name = Aname;
+        let age = Aage;
+        let isHungry = AisHungry;
+        let wantsCuddles = AwantsCuddles;
+        return this;
+    }
+
+    method void draw(int location) {
+        let memAddress = 16384+location;
+        do Memory.poke(memAddress+0, 0);
+        do Memory.poke(memAddress+32, 3640);
+        do Memory.poke(memAddress+64, 6700);
+        do Memory.poke(memAddress+96, 4548);
+        do Memory.poke(memAddress+128, 12294);
+        do Memory.poke(memAddress+160, 25619);
+        do Memory.poke(memAddress+192, 16385);
+        do Memory.poke(memAddress+224, 16385);
+        do Memory.poke(memAddress+256, 8386);
+        do Memory.poke(memAddress+288, 12294);
+        do Memory.poke(memAddress+320, 4100);
+        do Memory.poke(memAddress+352, 2248);
+        do Memory.poke(memAddress+384, 1552);
+        do Memory.poke(memAddress+416, 480);
+        do Memory.poke(memAddress+448, 0);
+        do Memory.poke(memAddress+480, 0);
+	    return;
+    }
+
+    method void dispose() {
+      do Memory.deAlloc(this);
+      return;
+   }

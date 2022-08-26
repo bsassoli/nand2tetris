@@ -1,0 +1,12 @@
+class Main {
+
+    function void main() {
+        var Jonny jonny;
+        do Keyboard.readInt("Input a char of name")
+        let jonny = Jonny.new("Jonny", 5, true, true);
+        do Screen.setColor(true);
+        do jonny.draw(12);
+        do jonny.dispose();
+        return;
+    }
+}

@@ -1,0 +1,33 @@
+function Main.main 1
+push constant 5
+call String.new 1
+push constant 74
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 121
+call String.appendChar 2
+push constant 5
+push constant 0
+not
+push constant 0
+not
+call Jonny.new 4
+pop local 0
+push constant 0
+not
+call Screen.setColor 1
+pop temp 0
+push local 0
+push constant 12
+call Jonny.draw 2
+pop temp 0
+push local 0
+call Jonny.dispose 1
+pop temp 0
+push constant 0
+return
