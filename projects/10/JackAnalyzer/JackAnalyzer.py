@@ -28,7 +28,9 @@ def compile_file(tokens, tagged, output):
     ***TODO***
     """
     compiler = Compiler(tokens, tagged, output)
-    compiled_output = compiler.compile()
+    compiler.compile()
+    with open(output, "w") as file:
+        file.write(compiler.out)
 
 
 def main():

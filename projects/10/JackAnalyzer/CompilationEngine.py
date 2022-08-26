@@ -151,8 +151,8 @@ class Compiler:
                     self.out += self.current_tagged_token
                     self.advance()
             self.advance()
+            self.out += "</classVarDec>\n"
             if self.current_token not in ["static", "field"]:
-                self.out += "</classVarDec>\n"
                 break
         # close
 
@@ -200,9 +200,7 @@ class Compiler:
 
             self.compileSubRoutineBody()
 
-            self.out += "</subroutineDec >\n"
-            print("Exiting subroutine DEC")
-            print(self.out)
+            self.out += "</subroutineDec >\n"            
 
     def compileParameterList(self):
         """Compiles list of params.
@@ -276,8 +274,6 @@ class Compiler:
         self.advance()
 
         self.compileSubroutineCall()
-
-        self.out += self.current_tagged_token    
         self.out += "</doStatement>\n"
 
 
@@ -289,27 +285,55 @@ class Compiler:
             if self.current_token == ";":
                 break
             self.out += "<letStatement>\n"
+            # print let
             self.out += self.current_tagged_token            
             self.advance()
+            # print varName
             self.out += self.current_tagged_token
             self.advance()
+            # check opt expression
             if self.current_token == "[":
                 self.out += self.current_tagged_token
-                self.advance()
+                self.advance()                
                 self.compileExpression() 
                 self.out += self.current_tagged_token
                 self.advance()
+            # print '='
             self.out += self.current_tagged_token
             self.advance()
-            self.out += self.current_tagged_token
-            self.advance()
+            # compile expression
+            self.compileExpression()
+        # semicolon
         self.out += self.current_tagged_token
         self.advance()
         self.out += "</letStatement>\n"
 
     def compileWhile(self):
-        """Compiles while statement"""
-        raise NotImplementedError
+        """Compiles while statement.
+            'while' '(' expression ')' '{' statements '}'
+        """
+        self.out += "<whileStatement>\n"
+        # print 'while'
+        self.out += self.current_tagged_token
+        self.advance()
+        # print left paren
+        self.out += self.current_tagged_token
+        self.advance()
+
+        self.compileExpression()
+        
+        # right paren
+        self.out += self.current_tagged_token
+        self.advance()
+        # left bracket
+        self.out += self.current_tagged_token
+        self.advance()
+
+        self.compileStatements()
+        
+        # right bracket
+        self.out += self.current_tagged_token
+        self.advance()
 
     def compileReturn(self):
         """Compiles return statement. 
@@ -319,10 +343,11 @@ class Compiler:
         self.advance()
         if self.get_current_token_tags()[0] == "<identifier>":
             self.compileExpression()
-
+        # print semicolon
         self.out += self.current_tagged_token
-        self.out += "</returnStatement\n"
         self.advance()
+        # close tag
+        self.out += "</returnStatement>\n"
 
     def compileIf(self):
         """Compiles if statement.
@@ -371,7 +396,7 @@ class Compiler:
         self.out += "<expression>\n"
         self.compileTerm()
         self.out += "</expression>\n"
-        self.advance()
+        
 
     def compileTerm(self):
         """Compiles term"""
@@ -393,10 +418,7 @@ class Compiler:
         """Compiles subroutine call
             subroutineName '(' expressionList ')' | ( className | varName) '.' subroutineName '(' expressionList ')'
         """
-        print("SUBROUTINE CALL")
-        self.out += "SUBROUTINE CALL\n"
-        self.out += "="*40+"\n"
-        
+        print("SUBROUTINE CALL")        
         # print subroutine name
         self.out += self.current_tagged_token
         self.advance()
