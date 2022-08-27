@@ -59,22 +59,16 @@ class Compiler:
         # write <class> tag
         self.out += "<class>\n"
         # write keyword class
-        
-        assert self.current_token == "class", "Class declaration must begin with <class>, got {} instead".format(self.current_token)
-        print("Printing keyword 'class': " + self.current_token)
         self.output_token()
         # write className
-        print("Printing className: " + self.current_token)
         self.output_token()
         # write l bracket
-        print("Printing lbracket: " + self.current_token)
         self.output_token()
         # compileClassVarDec
         self.compileClassVarDec()
         # write subroutineDec*
         self.compileSubRoutine()
         # write r bracket
-        # TODO
         self.out += self.current_tagged_token
         # write closing <class> tag
         self.out += "</class>\n"
@@ -102,8 +96,7 @@ class Compiler:
                     self.output_token()
             # ending semicolon
             self.output_token()
-            # closing <classVarDec> tag        
-            print(self.current_token)
+            # closing <classVarDec> tag
             self.out += "</classVarDec >\n"
     
     def compileSubRoutine(self):
@@ -118,7 +111,6 @@ class Compiler:
                 subroutineBody
         """
         while self.current_token in ["constructor", "function", "method"]:    
-            print("Hey, I am in a subroutine delcaration!")
             self.out += "<subroutineDec >\n"
             self.output_token() # constructor | method | function
             self.output_token() # void | type
@@ -165,8 +157,7 @@ class Compiler:
         """Compiles statements:
             letStatement | ifStatement | whileStatement | doStatement | returnStatement"""
         self.out += "<statements>\n"
-        print("In compile")
-        print(self.current_token)
+
         while True:
             if self.current_token not in ["if", "let", "do", "while"]:
                 break
@@ -225,14 +216,11 @@ class Compiler:
         """
         
         # print subroutine name
-        print("Output suborutine name")
         self.output_token()
         # Either expression list
         if self.current_token == "(":
             # left paren
             self.output_token()
-            print("Just output lparen " + self.current_token)
-            print("Calling compiling Expressrion LIST")
             self.compileExpressionList()
             # right paren
             self.output_token()
@@ -245,7 +233,6 @@ class Compiler:
             # print '('
             self.output_token()
             # expressionList
-            print("Calling compiling Expressrion LIST")
             self.compileExpressionList()
             # print ')'
             self.output_token()
