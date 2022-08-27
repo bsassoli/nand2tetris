@@ -60,9 +60,9 @@ def main():
             file = os.path.join(path, file)
         tokenized, tagged = tokenize_file(file)
         if is_dir:
-            out_file = os.path.join(path, file + "MC.xml")
+            out_file = os.path.join(path, file.split(".")[0] + "MC.xml")
         else:
-            out_file = file + "MC.xml"
+            out_file = file.split(".")[0] + "MC.xml"
         compile_file(tokenized, tagged, out_file)
 
 

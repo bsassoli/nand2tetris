@@ -1,206 +1,140 @@
-""" For every non-terminal building block of the language,
-we equip the parser with a recursive procedure designed
-to parse that non- terminal. If the non-terminal consists
-of terminal atoms only, the procedure will simply read them.
-Otherwise, for every non-terminal building block, the
-procedure will recursively call the procedure designed to
-parse the non-terminal. The process will continue recursively,
-until all the terminal atoms have been reached and read.
-"""
-
 from typing import List
-import math
 
 class Compiler:
-    """Compiler _summary_
+    """Compiler: Class producing the compiled program
     """
 
     def __init__(self, tokens: List[str], tagged: List[str], output: str):
         """__init__ _summary_
 
         Args:
-            input (List[str]): _description_
-            output (str): _description_
+            tokens (List[str]): a list of tokens
+            tagged (List[str]): the tagged tokens
+
         """
         self.tokens = tokens
-        self.output = ""
         self.current_token = ""
-        self.current_position = -math.inf
+        self.current_position = 0
         self.tagged_tokens = tagged
         self.current_tagged_token = ""
         self.token_dict = {
             key: val
             for key, val in enumerate(list(zip(self.tokens, self.tagged_tokens)))
         }
-        self.out = ""        
+        self.out = ""
 
     def advance(self):
+        """advance: consumes a toekn and advances one step
+
+        Returns:
+            _type_: _description_
+        """
         self.current_token = self.tokens[self.current_position]
-        self.current_tagged_token = self.token_dict.pop(self.current_position)[1]
+        self.current_tagged_token = self.token_dict.pop(
+            self.current_position)[1]
         self.current_position += 1
-        print(f"Advancing to pos {self.current_position}, current: {self.current_token}")        
+
+        print(
+            f"Advancing to pos {self.current_position}, current: {self.current_token}"
+        )
         return self.current_token, self.current_tagged_token
+
+    def output_token(self):
+        self.out += self.current_tagged_token
+        self.advance()
+
 
     def get_current_token_tags(self):
         start_tag, token, end_tag = self.current_tagged_token.split()
         return start_tag, token, end_tag
 
     def compile(self):
-        self.current_position = 0
-        self.current_token = self.tokens[self.current_position]
-        assert (
-            self.current_token == "class"
-        ), f"program should begin with keyword class, got '{self.current_token}' instead."
+        self.output_token()
         self.compileClass()
-        print(self.out)
-
+    
     def compileClass(self):
         """Compiles class where class has structure:
             'class' className '{' classVarDec* subroutineDec* '}'
         """
-        self.advance()
-        assert (
-            self.current_token == "class"
-        ), f"Wrong method 'compileClass' dispatched for {self.current_token}."
-
-        self.out +=  "<class>\n"
-        tags = self.get_current_token_tags()
-        assert (
-            tags[0] == "<keyword>"
-        ), "Expected <keyword> tag for `class`, got {}".format(tags[0])
-        assert (
-            tags[2] == "</keyword>"
-        ), "Expected </keyword> tag for `class`, got {}".format(tags[2])
-        self.out += self.current_tagged_token
-
-        self.advance()
-        tags = self.get_current_token_tags()
-        assert (
-            tags[0] == "<identifier>"
-        ), "Expected <identifier> tag for `class`, got {}".format(tags[0])
-        assert (
-            tags[2] == "</identifier>"
-        ), "Expected <identifier> tag for `class`, got {}".format(tags[2])
-        self.out += self.current_tagged_token
-        self.advance()
+        # write <class> tag
+        self.out += "<class>\n"
+        # write keyword class
         
-        tags = self.get_current_token_tags()
-        assert self.current_token == "{"
-        assert (
-            tags[0] == "<symbol>"
-        ), "Expected <symbol> tag for left curly, got {}".format(tags[0])
-        assert tags[1] == "{", "Expected <symbol> tag for left curly, got {}".format(
-            tags[1]
-        )
-        assert (
-            tags[2] == "</symbol>"
-        ), "Expected </symbol> tag for right curly, got {}".format(tags[2])
-        self.out += self.current_tagged_token
-
+        assert self.current_token == "class", "Class declaration must begin with <class>, got {} instead".format(self.current_token)
+        print("Printing keyword 'class': " + self.current_token)
+        self.output_token()
+        # write className
+        print("Printing className: " + self.current_token)
+        self.output_token()
+        # write l bracket
+        print("Printing lbracket: " + self.current_token)
+        self.output_token()
+        # compileClassVarDec
         self.compileClassVarDec()
-        self.compileSubroutine()
-        # End r bracket
+        # write subroutineDec*
+        self.compileSubRoutine()
+        # write r bracket
+        # TODO
         self.out += self.current_tagged_token
+        # write closing <class> tag
         self.out += "</class>\n"
-
+        print(self.out)
+    
     def compileClassVarDec(self):
-        """Compiles class var declaration where declaration has strcture:
+        """Compiles class var declaration where declaration has structure:
             ('static' | 'field' ) type varName (',' varName)* ';'
         """
-        self.advance()
-        # Loop
-        while True:
+        while self.current_token in ["static", "field"]:
             self.out += "<classVarDec >\n"
-            tags = self.get_current_token_tags()
-            assert self.current_token in [
-                "static",
-                "field",
-            ], "Expected one of 'static', 'field' tag, got {}".format(
-                self.current_token
-            )
-            assert tags[0] == "<keyword>", "Expected <keyword> tag, got {}".format(
-                tags[0]
-            )
-            assert tags[1] in [
-                "static",
-                "field",
-            ], "Expected one of 'static', 'field' tag, got {}".format(tags[1])
-            assert tags[2] == "</keyword>", "Expected </keyword> tag, got {}".format(
-                tags[2]
-            )
-            self.out += self.current_tagged_token
-            # type
-            self.advance()
-            tags = self.get_current_token_tags()
-            assert tags[0] == "<keyword>", "Expected <keyword> tag, got {}".format(
-                tags[0]
-            )
-            assert tags[2] == "</keyword>", "Expected </keyword> tag, got {}".format(
-                tags[2]
-            )
-            self.out += self.current_tagged_token
-            self.advance()
-            # compileVarName
+            # write static | field
+            assert self.current_token in ["static", "field"], f"Ecprected on of 'static', 'field', got {self.current_token} instead."
+            self.output_token()
+            # output type
+            self.output_token()
+            # output varname
+            self.output_token()
+            # optional other vars
             while True:
                 if self.current_token == ";":
-                    self.out += self.current_tagged_token
                     break
-                self.out += self.current_tagged_token
-                self.advance()
-                if self.current_token == ",":
-                    self.out += self.current_tagged_token
-                    self.advance()
-            self.advance()
-            self.out += "</classVarDec>\n"
-            if self.current_token not in ["static", "field"]:
-                break
-        # close
-
-    def compileSubroutine(self):
+                else:
+                    # output varname
+                    self.output_token()
+            # ending semicolon
+            self.output_token()
+            # closing <classVarDec> tag        
+            print(self.current_token)
+            self.out += "</classVarDec >\n"
+    
+    def compileSubRoutine(self):
         """Compiles a complete method, function, or constructor.
-        Structure of subroutine:
-            ('constructor' | 'function' | 'method')
-            ('void' | type)
-            subroutineName
-            '('
-            parameterList
-            ')'
-            subroutineBody
+            Structure of subroutine:
+                ('constructor' | 'function' | 'method')
+                ('void' | type)
+                subroutineName
+                '('
+                parameterList
+                ')'
+                subroutineBody
         """
-        # declaration
-        while True:
-            if self.current_token == "}":
-                break
+        while self.current_token in ["constructor", "function", "method"]:    
+            print("Hey, I am in a subroutine delcaration!")
             self.out += "<subroutineDec >\n"
-            tags = self.get_current_token_tags()
-            assert (
-                tags[0] == "<keyword>"
-            ), "Expected <keyword> tag for subroutineDec, got {}".format(tags[0])
-            assert tags[1] in [
-                "constructor",
-                "method",
-                "function",
-            ], "Expected 'constructor', 'method', 'function', got {}".format(tags[1])
-            self.out += self.current_tagged_token
-            # type
-            self.advance()
-            self.out += self.current_tagged_token
-            # name
-            self.advance()
-            self.out += self.current_tagged_token
-
-            self.advance()
-            assert self.current_token == "(", "Expected left paren"
-            self.out += self.current_tagged_token
-            self.advance()
-
+            self.output_token() # constructor | method | function
+            self.output_token() # void | type
+            self.output_token()  # subroutineName
+            self.output_token()  # l paren
             self.compileParameterList()
-            self.out += self.current_tagged_token
-            self.advance()
-
-            self.compileSubRoutineBody()
-
-            self.out += "</subroutineDec >\n"            
+            self.output_token()  # r paren
+            # subroutineBody
+            # '{' varDec* statements '}'
+            self.out += "<subroutineBody>\n"
+            self.output_token()  # l bracket
+            self.compileVarDec()
+            self.compileStatements()
+            self.output_token()  # r bracket 
+            self.out += "</subroutineBody>\n"     
+            self.out += "</subroutineDec >\n"
 
     def compileParameterList(self):
         """Compiles list of params.
@@ -208,55 +142,37 @@ class Compiler:
         """
         self.out += "<parameterList>\n"
         while self.current_token != ")":
-            self.out += self.current_tagged_token
-            self.advance()
+            self.output_token()
         self.out += "</parameterList>\n"
-
-    def compileSubRoutineBody(self):
-        """ Compiles subroutine body.
-        '{' varDec* statements '}'
-        """
-        self.out += "<subroutineBody>\n"
-        self.out += self.current_tagged_token
-        self.advance()
-        if self.get_current_token_tags()[1] == "var":            
-            while self.current_token != "}":
-                self.compileVarDec()
-                self.advance()
-            if self.current_token == ";":
-                self.out += self.current_tagged_token
-                self.advance
-        # statements
-        self.compileStatements()        
-        
-        # rbracket
-        self.out += self.current_tagged_token     
-        #close
-        self.out += "</subroutineBody>\n"
         
 
     def compileVarDec(self):
         """Compiles variable declaration.
-        'var' type varName (',' varName)* ';'"""
-        self.out += self.current_tagged_token
-        self.advance()
-        self.out += self.current_tagged_token
-        self.advance()
-        self.out += self.current_tagged_token
-        self.advance()
-        self.out += self.current_tagged_token
-        self.advance()
-
+            'var' type varName (',' varName)* ';'"""
+        
+        while True:
+            if self.current_token != "var":
+                break
+            self.out += "<varDec>\n"
+            self.output_token()  # var
+            self.output_token() # type
+            self.output_token() # varName
+            if self.current_token != ",":
+                break
+            self.output_token()
+            self.out += "</varDec>\n"
     def compileStatements(self):
         """Compiles statements:
             letStatement | ifStatement | whileStatement | doStatement | returnStatement"""
         self.out += "<statements>\n"
+        print("In compile")
+        print(self.current_token)
         while True:
             if self.current_token not in ["if", "let", "do", "while"]:
                 break
             if self.current_token == "if":
                 self.compileIf()
-            if self.current_token == "let":                
+            if self.current_token == "let":
                 self.compileLet()
             if self.current_token == "do":
                 self.compileDo()
@@ -266,189 +182,131 @@ class Compiler:
                 self.compileReturn()
         self.out += "</statements>\n"
     
-    def compileDo(self):
-        """Compiles do instruction:
-         'do' subroutineCall ';'"""
-        self.out += "<doStatement>\n"
-        self.out += self.current_tagged_token
-        self.advance()
-
-        self.compileSubroutineCall()
-        self.out += "</doStatement>\n"
-
-
-    def compileLet(self):
-        """Compiles let instruction.
-            'let' varName('[' expression ']')? '=' expression ';'
-        """
-        while self.current_token != ";":
-            if self.current_token == ";":
-                break
-            self.out += "<letStatement>\n"
-            # print let
-            self.out += self.current_tagged_token            
-            self.advance()
-            # print varName
-            self.out += self.current_tagged_token
-            self.advance()
-            # check opt expression
-            if self.current_token == "[":
-                self.out += self.current_tagged_token
-                self.advance()                
-                self.compileExpression() 
-                self.out += self.current_tagged_token
-                self.advance()
-            # print '='
-            self.out += self.current_tagged_token
-            self.advance()
-            # compile expression
-            self.compileExpression()
-        # semicolon
-        self.out += self.current_tagged_token
-        self.advance()
-        self.out += "</letStatement>\n"
-
-    def compileWhile(self):
-        """Compiles while statement.
-            'while' '(' expression ')' '{' statements '}'
-        """
-        self.out += "<whileStatement>\n"
-        # print 'while'
-        self.out += self.current_tagged_token
-        self.advance()
-        # print left paren
-        self.out += self.current_tagged_token
-        self.advance()
-
-        self.compileExpression()
-        
-        # right paren
-        self.out += self.current_tagged_token
-        self.advance()
-        # left bracket
-        self.out += self.current_tagged_token
-        self.advance()
-
-        self.compileStatements()
-        
-        # right bracket
-        self.out += self.current_tagged_token
-        self.advance()
-
-    def compileReturn(self):
-        """Compiles return statement. 
-            'return' expression? ';'"""
-        self.out += "<returnStatement>\n"
-        self.out += self.current_tagged_token
-        self.advance()
-        if self.get_current_token_tags()[0] == "<identifier>":
-            self.compileExpression()
-        # print semicolon
-        self.out += self.current_tagged_token
-        self.advance()
-        # close tag
-        self.out += "</returnStatement>\n"
-
     def compileIf(self):
         """Compiles if statement.
         if' '(' expression ')' '{' statements '}' ( 'else' '{' statements '}' )?"""
         self.out += "<ifStatement>\n"
-        assert self.get_current_token_tags(
-        )[1] == "If", "If statment must begine with if"        
-        self.out += self.current_tagged_token
-        self.advance()
-        assert self.get_current_token_tags(
-        )[1] == "(", "If statment must be followed by left paren"
-        self.out += self.current_tagged_token
-        self.advance()
+        self.output_token() # if
+        self.output_token()  # (
         self.compileExpression()
-        self.out += self.current_tagged_token
-        self.advance()
-        
-        self.out += self.current_tagged_token
-        self.advance()
+        self.output_token()  # )
+        self.output_token()  # {
         self.compileStatements()
-        print("Compiled staments form within if statement")
-        
         if self.current_token == "else":
-            self.out += self.current_tagged_token
-            self.advance()
-            self.out += self.current_tagged_token
-            self.advance()
+            self.output_token() # {
             self.compileStatements()
-            self.out += self.current_tagged_token
-            self.advance()
-        else:
-            self.out += self.current_tagged_token
-            self.advance()
-
-
-        self.out += self.current_tagged_token
-        self.advance()
         
-        print(f"Breaking out of if Statement at position: {self.current_position} with current token: {self.current_token}")
+        self.output_token()  # }
         self.out += "</ifStatement>\n"
-        print(self.out)
-        
+    def compileLet(self):
+        """Compiles let instruction.
+            'let' varName('[' expression ']')? '=' expression ';'
+        """
+        self.out += "<letStatement>\n"
+        self.output_token() # let
+        self.output_token()  # varName
+        self.output_token()  # opt Array [
+        self.compileExpression() # expression
+        self.output_token()  # opt end Array ]
+        self.out += "</letStatement>\n"
 
-    def compileExpression(self):
-        """Compiles expression"""
-        self.out += "<expression>\n"
-        self.compileTerm()
-        self.out += "</expression>\n"
-        
-
-    def compileTerm(self):
-        """Compiles term"""
-        self.out += "<term>\n"
-        self.out += self.current_tagged_token
-        self.out += "</term>\n"
-        self.advance()
-
-    def compileExpressionList(self):
-        """Compiles list of expressions"""
-        self.out += "<expressionList>\n"
-        while self.current_token != ")":
-            self.compileExpression()
-        self.out += "</expressionList>\n"
-        self.out += self.current_tagged_token
-        self.advance()
+    def compileDo(self):
+        """Compiles do instruction:
+         'do' subroutineCall ';'"""
+        self.out += "<doStatement>\n"
+        self.output_token() # do
+        self.compileSubroutineCall()  # subroutine call TO IMPLEMENT        
+        self.output_token()  # ;
+        self.out += "</doStatement>\n"
     
     def compileSubroutineCall(self):
         """Compiles subroutine call
             subroutineName '(' expressionList ')' | ( className | varName) '.' subroutineName '(' expressionList ')'
         """
-        print("SUBROUTINE CALL")        
+        
         # print subroutine name
-        self.out += self.current_tagged_token
-        self.advance()
+        print("Output suborutine name")
+        self.output_token()
         # Either expression list
         if self.current_token == "(":
             # left paren
-            self.out += self.current_tagged_token
-            self.advance()
-            # expression list
+            self.output_token()
+            print("Just output lparen " + self.current_token)
+            print("Calling compiling Expressrion LIST")
             self.compileExpressionList()
             # right paren
-            self.out += self.current_tagged_token
-            self.advance()
+            self.output_token()
         # Or ( className | varName) '.' subroutineName '(' expressionList ')'
         else:
-            # ( className | varName)
-            self.out += self.current_tagged_token
-            self.advance()
             # print '.'
-            self.out += self.current_tagged_token
-            self.advance()
+            self.output_token()
             # print subroutineName
-            self.out += self.current_tagged_token
-            self.advance()
+            self.output_token()
             # print '('
-            self.out += self.current_tagged_token
-            self.advance()
+            self.output_token()
             # expressionList
+            print("Calling compiling Expressrion LIST")
             self.compileExpressionList()
             # print ')'
-            self.out += self.current_tagged_token
-            self.advance()
-            
+            self.output_token()
+
+    def compileWhile(self):
+        self.output_token()
+
+    def compileReturn(self):
+        """Compiles return statement. 
+            'return' expression? ';'"""
+        self.out += "<returnStatement>\n"
+        self.output_token() # return
+        if self.get_current_token_tags()[0] == "<identifier>":
+            self.compileExpression()
+        self.output_token()  # semicolon
+        self.out += "</returnStatement>\n"
+
+    def compileExpression(self):
+        """compileExpression compiles an expression of form:
+            term (op term)*
+        """
+        # TODO
+        # EXTEND TO COMPLEX EXPRESSIONS
+        self.out += "<expression>\n"
+        self.compileTerm()
+        self.out += "</expression>\n"
+
+    def compileTerm(self):
+        """compileTerm _summary_
+            IntegerConstant | 
+            stringConstant | 
+            keywordConstant | 
+            varName | 
+            varName '[' expression ']' | 
+            subroutineCall | 
+            '(' expression ')' | 
+            unaryOp term
+        """
+        self.out += "<term>\n"
+        
+        if self.current_token == "(":         
+            self.output_token()  # write (
+            self.compileExpression()  # compile expression
+            self.output_token()  # write )
+            # careful could go in infinite loop?
+        else:
+            self.output_token()
+            # [ expression ]
+            if self.current_token == "[":
+                self.output_token() # write [
+                self.compileExpression()   # compile expression
+                self.output_token() # write ]
+        self.out += "</term>\n"
+
+    def compileExpressionList(self):
+        """Compiles list of expressions.
+            (expression (',' expression)* )?"""
+        self.out += "<expressionList>\n"
+        while self.current_token != ")":           
+            if self.current_token == ",":
+                self.output_token()
+            self.compileExpression()           
+        self.out += "</expressionList>\n"
+

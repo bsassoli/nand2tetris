@@ -5,8 +5,8 @@ from textwrap import dedent
 from lexical_elements import SYMBOLS, KEYWORDS, SPECIAL_SYMBOLS
 
 
-class Tokenizer:
-    """ Tokenizer class
+class Tokenizer():
+    """Tokenizer _summary_
     """
 
     def __init__(self, path):
