@@ -14,7 +14,7 @@ class Compiler:
         Args:
             tokens (List[str]): A list of tokens
             tagged (List[str]): A list of tagged tokens in the format: <tag> token </tag>
-            types (_type_): _description_
+            types (_type_): A list of the token types
         """
         self.tokens = tokens
         self.current_token = ""
@@ -290,7 +290,6 @@ class Compiler:
             self.output_token()  # write (
             self.compileExpression()  # compile expression
             self.output_token()  # write )
-            # careful could go in infinite loop?
 
         elif lookahead == "[":  # array
             self.output_token()  # write varNmae
