@@ -5,7 +5,7 @@ from textwrap import dedent
 from lexical_elements import SYMBOLS, KEYWORDS, SPECIAL_SYMBOLS
 
 
-class Tokenizer():
+class Tokenizer:
     """Tokenizer _summary_
     """
 

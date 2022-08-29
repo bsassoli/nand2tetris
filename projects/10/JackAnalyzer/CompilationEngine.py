@@ -1,5 +1,6 @@
 from typing import List
 
+
 class Compiler:
     """Compiler: Class producing the compiled program
     """
@@ -31,8 +32,7 @@ class Compiler:
             _type_: _description_
         """
         self.current_token = self.tokens[self.current_position]
-        self.current_tagged_token = self.token_dict.pop(
-            self.current_position)[1]
+        self.current_tagged_token = self.token_dict.pop(self.current_position)[1]
         self.current_position += 1
 
         return self.current_token, self.current_tagged_token
@@ -43,14 +43,14 @@ class Compiler:
 
     def get_current_token_type(self):
         return self.get_current_token_tags()[1:-1]
-    
-    def get_current_token_tags(self):        
+
+    def get_current_token_tags(self):
         return self.current_tagged_token.split()[0]
 
     def compile(self):
         self.output_token()
         self.compileClass()
-    
+
     def compileClass(self):
         """Compiles class where class has structure:
             'class' className '{' classVarDec* subroutineDec* '}'
@@ -72,7 +72,7 @@ class Compiler:
         # write closing <class> tag
         self.out += "</class>\n"
         # print(self.out)
-    
+
     def compileClassVarDec(self):
         """Compiles class var declaration where declaration has structure:
             ('static' | 'field' ) type varName (',' varName)* ';'
@@ -80,7 +80,10 @@ class Compiler:
         while self.current_token in ["static", "field"]:
             self.out += "<classVarDec >\n"
             # write static | field
-            assert self.current_token in ["static", "field"], f"Ecprected on of 'static', 'field', got {self.current_token} instead."
+            assert self.current_token in [
+                "static",
+                "field",
+            ], f"Ecprected on of 'static', 'field', got {self.current_token} instead."
             self.output_token()
             # output type
             self.output_token()
@@ -97,7 +100,7 @@ class Compiler:
             self.output_token()
             # closing <classVarDec> tag
             self.out += "</classVarDec >\n"
-    
+
     def compileSubRoutine(self):
         """Compiles a complete method, function, or constructor.
             Structure of subroutine:
@@ -109,10 +112,10 @@ class Compiler:
                 ')'
                 subroutineBody
         """
-        while self.current_token in ["constructor", "function", "method"]:    
+        while self.current_token in ["constructor", "function", "method"]:
             self.out += "<subroutineDec >\n"
-            self.output_token() # constructor | method | function
-            self.output_token() # void | type
+            self.output_token()  # constructor | method | function
+            self.output_token()  # void | type
             self.output_token()  # subroutineName
             self.output_token()  # l paren
             self.compileParameterList()
@@ -123,8 +126,8 @@ class Compiler:
             self.output_token()  # l bracket
             self.compileVarDec()
             self.compileStatements()
-            self.output_token()  # r bracket 
-            self.out += "</subroutineBody>\n"     
+            self.output_token()  # r bracket
+            self.out += "</subroutineBody>\n"
             self.out += "</subroutineDec >\n"
 
     def compileParameterList(self):
@@ -135,11 +138,10 @@ class Compiler:
         while self.current_token != ")":
             self.output_token()
         self.out += "</parameterList>\n"
-        
 
     def compileVarDec(self):
         """Compiles variable declaration.
-            'var' type varName (',' varName)* ';'""" 
+            'var' type varName (',' varName)* ';'"""
         while True:
             if self.current_token != "var":
                 break
@@ -147,7 +149,7 @@ class Compiler:
             self.output_token()  # var
             self.output_token()  # type
             self.output_token()  # varName
-            while True:                    
+            while True:
                 if self.current_token != ",":
                     break
                 self.output_token()
@@ -174,12 +176,12 @@ class Compiler:
             if self.current_token == "return":
                 self.compileReturn()
         self.out += "</statements>\n"
-    
+
     def compileIf(self):
         """Compiles if statement.
         if' '(' expression ')' '{' statements '}' ( 'else' '{' statements '}' )?"""
         self.out += "<ifStatement>\n"
-        self.output_token() # if
+        self.output_token()  # if
         self.output_token()  # (
         self.compileExpression()
         self.output_token()  # )
@@ -188,7 +190,7 @@ class Compiler:
         self.output_token()  # }
         if self.current_token == "else":
             self.output_token()  # else
-            self.output_token() # {
+            self.output_token()  # {
             self.compileStatements()
             self.output_token()  # }
         self.out += "</ifStatement>\n"
@@ -198,11 +200,11 @@ class Compiler:
             'let' varName('[' expression ']')? '=' expression ';'
         """
         self.out += "<letStatement>\n"
-        self.output_token() # let
+        self.output_token()  # let
         self.output_token()  # varName
         if self.current_token == "[":
             self.output_token()  # opt Array [
-            self.compileExpression() # expression
+            self.compileExpression()  # expression
             self.output_token()  # opt end Array ]
         self.output_token()  # opt Array [
         self.compileExpression()
@@ -213,16 +215,16 @@ class Compiler:
         """Compiles do instruction:
          'do' subroutineCall ';'"""
         self.out += "<doStatement>\n"
-        self.output_token() # do
-        self.compileSubroutineCall()  # subroutine call TO IMPLEMENT        
+        self.output_token()  # do
+        self.compileSubroutineCall()  # subroutine call TO IMPLEMENT
         self.output_token()  # ;
         self.out += "</doStatement>\n"
-    
+
     def compileSubroutineCall(self):
         """Compiles subroutine call
             subroutineName '(' expressionList ')' | ( className | varName) '.' subroutineName '(' expressionList ')'
         """
-        
+
         # print subroutine name
         self.output_token()
         # Either expression list
@@ -250,8 +252,8 @@ class Compiler:
             'while' '(' expression ')' '{' statements '}'
         """
         self.out += "<whileStatement>\n"
-        self.output_token() # while
-        self.output_token() # l paren
+        self.output_token()  # while
+        self.output_token()  # l paren
         self.compileExpression()
         self.output_token()  # r paren
         self.output_token()  # l curly
@@ -259,12 +261,11 @@ class Compiler:
         self.output_token()  # r curly
         self.out += "</whileStatement>\n"
 
-
     def compileReturn(self):
         """Compiles return statement. 
             'return' expression? ';'"""
         self.out += "<returnStatement>\n"
-        self.output_token() # return
+        self.output_token()  # return
         if self.current_token != ";":
             self.compileExpression()
         self.output_token()  # semicolon
@@ -275,9 +276,9 @@ class Compiler:
             term (op term)*
         """
         self.out += "<expression>\n"
-        
+
         self.compileTerm()
-        
+
         while self.current_token in ["+", "-", "*", "/", "&", "|", "<", ">", "="]:
             self.output_token()
             self.compileTerm()
@@ -297,8 +298,8 @@ class Compiler:
         # if current token is a constant then output
         # elif it's lparen evaluate expression
         # else lookahead and check what's next:
-            # if it's a lbracket then array
-            # it it's a . or a lparen then compile subroutine call 
+        # if it's a lbracket then array
+        # it it's a . or a lparen then compile subroutine call
 
         # else it's a unary opterm or a var so just output
         self.out += "<term>\n"
@@ -306,25 +307,32 @@ class Compiler:
         if self.current_token in ["-", "~"]:
             self.output_token()  # write
             self.compileTerm()  # write
-        
-        elif self.get_current_token_type() in ["integerConstant", "stringConstant", "true" , "false", "null", "this"]:
-            self.output_token()  # write 
-        
-        elif self.current_token == "(":         
+
+        elif self.get_current_token_type() in [
+            "integerConstant",
+            "stringConstant",
+            "true",
+            "false",
+            "null",
+            "this",
+        ]:
+            self.output_token()  # write
+
+        elif self.current_token == "(":
             self.output_token()  # write (
             self.compileExpression()  # compile expression
             self.output_token()  # write )
             # careful could go in infinite loop?
-        
-        elif lookahead == "[": #array            
-            self.output_token() # write varNmae
-            self.output_token() # write [
-            self.compileExpression()   # compile expression
+
+        elif lookahead == "[":  # array
+            self.output_token()  # write varNmae
+            self.output_token()  # write [
+            self.compileExpression()  # compile expression
             self.output_token()  # write ]
-        
-        elif lookahead in [".","("]:
+
+        elif lookahead in [".", "("]:
             self.compileSubroutineCall()
-        
+
         else:
             self.output_token()
         self.out += "</term>\n"
@@ -333,9 +341,8 @@ class Compiler:
         """Compiles list of expressions.
             (expression (',' expression)* )?"""
         self.out += "<expressionList>\n"
-        while self.current_token != ")":           
+        while self.current_token != ")":
             if self.current_token == ",":
                 self.output_token()
-            self.compileExpression()           
+            self.compileExpression()
         self.out += "</expressionList>\n"
-
