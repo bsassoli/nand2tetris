@@ -20,14 +20,14 @@ def tokenize_file(file):
     while tokenizer.has_more_tokens():
         tokenizer.advance()
     tokenizer.write()
-    return tokenizer.tokens, tokenizer.tagged_tokens
+    return tokenizer.tokens, tokenizer.tagged_tokens, tokenizer.token_types
 
 
-def compile_file(tokens, tagged, output):
+def compile_file(tokens, tagged, types, output):
     """
     ***TODO***
     """
-    compiler = Compiler(tokens, tagged, output)
+    compiler = Compiler(tokens, tagged, types, output)
     compiler.compile()
     with open(output, "w") as file:
         file.write(compiler.out)
@@ -58,12 +58,12 @@ def main():
         assert file.split(".")[1] == "jack", "Wrong filetype: must provide a .jack file"
         if is_dir:
             file = os.path.join(path, file)
-        tokenized, tagged = tokenize_file(file)
+        tokenized, tagged, types = tokenize_file(file)
         if is_dir:
             out_file = os.path.join(path, file.split(".")[0] + "MC.xml")
         else:
             out_file = file.split(".")[0] + "MC.xml"
-        compile_file(tokenized, tagged, out_file)
+        compile_file(tokenized, tagged, types, out_file)
 
 
 if __name__ == "__main__":

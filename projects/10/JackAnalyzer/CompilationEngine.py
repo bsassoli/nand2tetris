@@ -4,7 +4,7 @@ class Compiler:
     """Compiler: Class producing the compiled program
     """
 
-    def __init__(self, tokens: List[str], tagged: List[str], output: str):
+    def __init__(self, tokens: List[str], tagged: List[str], types, output: str):
         """__init__ _summary_
 
         Args:
@@ -22,6 +22,7 @@ class Compiler:
             for key, val in enumerate(list(zip(self.tokens, self.tagged_tokens)))
         }
         self.out = ""
+        self.token_types = types
 
     def advance(self):
         """advance: consumes a toekn and advances one step
@@ -43,10 +44,11 @@ class Compiler:
         self.out += self.current_tagged_token
         self.advance()
 
-
-    def get_current_token_tags(self):
-        start_tag, token, end_tag = self.current_tagged_token.split()
-        return start_tag, token, end_tag
+    def get_current_token_type(self):
+        return self.get_current_token_tags()[1:-1]
+    
+    def get_current_token_tags(self):        
+        return self.current_tagged_token.split()[0]
 
     def compile(self):
         self.output_token()
@@ -72,7 +74,7 @@ class Compiler:
         self.out += self.current_tagged_token
         # write closing <class> tag
         self.out += "</class>\n"
-        print(self.out)
+        # print(self.out)
     
     def compileClassVarDec(self):
         """Compiles class var declaration where declaration has structure:
@@ -140,19 +142,22 @@ class Compiler:
 
     def compileVarDec(self):
         """Compiles variable declaration.
-            'var' type varName (',' varName)* ';'"""
-        
+            'var' type varName (',' varName)* ';'""" 
         while True:
             if self.current_token != "var":
                 break
             self.out += "<varDec>\n"
             self.output_token()  # var
-            self.output_token() # type
-            self.output_token() # varName
-            if self.current_token != ",":
-                break
+            self.output_token()  # type
+            self.output_token()  # varName
+            while True:                    
+                if self.current_token != ",":
+                    break
+                self.output_token()
+                self.output_token()
             self.output_token()
             self.out += "</varDec>\n"
+
     def compileStatements(self):
         """Compiles statements:
             letStatement | ifStatement | whileStatement | doStatement | returnStatement"""
@@ -183,12 +188,14 @@ class Compiler:
         self.output_token()  # )
         self.output_token()  # {
         self.compileStatements()
+        self.output_token()  # }
         if self.current_token == "else":
+            self.output_token()  # else
             self.output_token() # {
             self.compileStatements()
-        
-        self.output_token()  # }
+            self.output_token()  # }
         self.out += "</ifStatement>\n"
+
     def compileLet(self):
         """Compiles let instruction.
             'let' varName('[' expression ']')? '=' expression ';'
@@ -196,9 +203,15 @@ class Compiler:
         self.out += "<letStatement>\n"
         self.output_token() # let
         self.output_token()  # varName
+        print(self.current_token)
+        if self.current_token == "[":
+            print("Array in let expression")
+            self.output_token()  # opt Array [
+            self.compileExpression() # expression
+            self.output_token()  # opt end Array ]
         self.output_token()  # opt Array [
-        self.compileExpression() # expression
-        self.output_token()  # opt end Array ]
+        self.compileExpression()
+        self.output_token()  # ;
         self.out += "</letStatement>\n"
 
     def compileDo(self):
@@ -238,14 +251,26 @@ class Compiler:
             self.output_token()
 
     def compileWhile(self):
-        self.output_token()
+        """Compiles while statement.
+            'while' '(' expression ')' '{' statements '}'
+        """
+        self.out += "<whileStatement>\n"
+        self.output_token() # while
+        self.output_token() # l paren
+        self.compileExpression()
+        self.output_token()  # r paren
+        self.output_token()  # l curly
+        self.compileStatements()
+        self.output_token()  # r curly
+        self.out += "</whileStatement>\n"
+
 
     def compileReturn(self):
         """Compiles return statement. 
             'return' expression? ';'"""
         self.out += "<returnStatement>\n"
         self.output_token() # return
-        if self.get_current_token_tags()[0] == "<identifier>":
+        if self.get_current_token_tags() == "<identifier>":
             self.compileExpression()
         self.output_token()  # semicolon
         self.out += "</returnStatement>\n"
@@ -256,35 +281,65 @@ class Compiler:
         """
         # TODO
         # EXTEND TO COMPLEX EXPRESSIONS
+        print("ENtring compile expression")
         self.out += "<expression>\n"
+        
         self.compileTerm()
+
+        while self.current_token in ["+" , "-" , "*" , "/" , "&" , "|" , "<" , ">" , "="]:
+            print("Consuming expression")
+            self.output_token()
+            print("Consuming expression and now current is: " + self.current_token)
+            self.compileTerm()
+        print("Exiting compile expression")
         self.out += "</expression>\n"
 
     def compileTerm(self):
         """compileTerm _summary_
             IntegerConstant | 
             stringConstant | 
-            keywordConstant | 
+            keywordConstant |
             varName | 
             varName '[' expression ']' | 
             subroutineCall | 
             '(' expression ')' | 
             unaryOp term
         """
+        # if current token is a constant then output
+        # elif it's lparen evaluate expression
+        # else lookahead and check what's next:
+            # if it's a lbracket then array
+            # it it's a . or a lparen then compile subroutine call 
+
+        # else it's a unary opterm or a var so just output
+        print("Entering compile Trem")
         self.out += "<term>\n"
+        lookahead = self.tokens[self.current_position]
+        print(f"TYPE of {self.current_token} {self.current_tagged_token}: " )
+        print(f"Lookahead: " + lookahead)
+        if self.get_current_token_type() in ["integerConstant", "stringConstant", "true" , "false", "null", "this"]:
+            self.output_token()  # write 
         
-        if self.current_token == "(":         
+        elif self.current_token == "(":         
             self.output_token()  # write (
             self.compileExpression()  # compile expression
             self.output_token()  # write )
             # careful could go in infinite loop?
+        
+        elif lookahead == "[": #array
+            print("Array found")
+            self.output_token() # write varNmae
+            self.output_token() # write [
+            self.compileExpression()   # compile expression
+            self.output_token()  # write ]
+        
+        elif lookahead in [".","("]:
+            print("You GOTTA COMPILE THIS AS A SUBROUTINE CALL!")
+            self.compileSubroutineCall()
+        
         else:
             self.output_token()
-            # [ expression ]
-            if self.current_token == "[":
-                self.output_token() # write [
-                self.compileExpression()   # compile expression
-                self.output_token() # write ]
+        print("Exiting compile Trem")
         self.out += "</term>\n"
 
     def compileExpressionList(self):

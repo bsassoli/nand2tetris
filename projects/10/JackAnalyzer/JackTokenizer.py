@@ -17,6 +17,7 @@ class Tokenizer():
         self.tokens = []
         self.processed_lines = []
         self.tagged_tokens = []
+        self.token_types = []
 
     def open(self) -> List[str]:
         """Opens file and return list of lines"""
@@ -123,4 +124,5 @@ class Tokenizer():
                 tok = self.output_token(token)
                 file.write(tok)
                 self.tagged_tokens.append(tok)
+                self.token_types.append(self.token_type(token))
             file.write("</tokens>\n")

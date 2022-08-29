@@ -96,9 +96,19 @@
 <statements>
 </statements>
 <symbol> }  </symbol>
-</ifStatement>
-</statements>
 <keyword> else </keyword>
+<symbol> {  </symbol>
+<statements>
+</statements>
+<symbol> }  </symbol>
+</ifStatement>
+<returnStatement>
+<keyword> return </keyword>
+<symbol> ;  </symbol>
+</returnStatement>
+</statements>
+<symbol> }  </symbol>
 </subroutineBody>
 </subroutineDec >
+<symbol> }  </symbol>
 </class>
