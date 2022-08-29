@@ -5,6 +5,7 @@ For each source Xxx.jack file:
     3. Compile(INPUT: tokenizer, OUTPUT: output file)
 Where output file refers to the Xxx.xml file.
 """
+
 import sys
 import os
 from JackTokenizer import Tokenizer
@@ -25,9 +26,9 @@ def tokenize_file(file):
 
 def compile_file(tokens, tagged, types, output):
     """
-    ***TODO***
+    Outputs a the compiled xml
     """
-    compiler = Compiler(tokens, tagged, types, output)
+    compiler = Compiler(tokens, tagged, types)
     compiler.compile()
     with open(output, "w") as file:
         file.write(compiler.out)
