@@ -35,9 +35,6 @@ class Compiler:
             self.current_position)[1]
         self.current_position += 1
 
-        print(
-            f"Advancing to pos {self.current_position}, current: {self.current_token}"
-        )
         return self.current_token, self.current_tagged_token
 
     def output_token(self):
@@ -203,9 +200,7 @@ class Compiler:
         self.out += "<letStatement>\n"
         self.output_token() # let
         self.output_token()  # varName
-        print(self.current_token)
         if self.current_token == "[":
-            print("Array in let expression")
             self.output_token()  # opt Array [
             self.compileExpression() # expression
             self.output_token()  # opt end Array ]
@@ -270,7 +265,7 @@ class Compiler:
             'return' expression? ';'"""
         self.out += "<returnStatement>\n"
         self.output_token() # return
-        if self.get_current_token_tags() == "<identifier>":
+        if self.current_token != ";":
             self.compileExpression()
         self.output_token()  # semicolon
         self.out += "</returnStatement>\n"
@@ -279,19 +274,13 @@ class Compiler:
         """compileExpression compiles an expression of form:
             term (op term)*
         """
-        # TODO
-        # EXTEND TO COMPLEX EXPRESSIONS
-        print("ENtring compile expression")
         self.out += "<expression>\n"
         
         self.compileTerm()
-
-        while self.current_token in ["+" , "-" , "*" , "/" , "&" , "|" , "<" , ">" , "="]:
-            print("Consuming expression")
+        
+        while self.current_token in ["+", "-", "*", "/", "&", "|", "<", ">", "="]:
             self.output_token()
-            print("Consuming expression and now current is: " + self.current_token)
             self.compileTerm()
-        print("Exiting compile expression")
         self.out += "</expression>\n"
 
     def compileTerm(self):
@@ -312,12 +301,13 @@ class Compiler:
             # it it's a . or a lparen then compile subroutine call 
 
         # else it's a unary opterm or a var so just output
-        print("Entering compile Trem")
         self.out += "<term>\n"
         lookahead = self.tokens[self.current_position]
-        print(f"TYPE of {self.current_token} {self.current_tagged_token}: " )
-        print(f"Lookahead: " + lookahead)
-        if self.get_current_token_type() in ["integerConstant", "stringConstant", "true" , "false", "null", "this"]:
+        if self.current_token in ["-", "~"]:
+            self.output_token()  # write
+            self.compileTerm()  # write
+        
+        elif self.get_current_token_type() in ["integerConstant", "stringConstant", "true" , "false", "null", "this"]:
             self.output_token()  # write 
         
         elif self.current_token == "(":         
@@ -326,20 +316,17 @@ class Compiler:
             self.output_token()  # write )
             # careful could go in infinite loop?
         
-        elif lookahead == "[": #array
-            print("Array found")
+        elif lookahead == "[": #array            
             self.output_token() # write varNmae
             self.output_token() # write [
             self.compileExpression()   # compile expression
             self.output_token()  # write ]
         
         elif lookahead in [".","("]:
-            print("You GOTTA COMPILE THIS AS A SUBROUTINE CALL!")
             self.compileSubroutineCall()
         
         else:
             self.output_token()
-        print("Exiting compile Trem")
         self.out += "</term>\n"
 
     def compileExpressionList(self):
