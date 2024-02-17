@@ -4,7 +4,7 @@ Usage: python parser.py filename
 """
 
 from textwrap import dedent
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import sys
 import os
 
@@ -38,7 +38,7 @@ def preprocess(lines: List[str]) -> List[str]:
     return lines
 
 
-def first_pass(program: List[str], symbol_table: Dict[str, int]) -> Dict[str, int]:
+def first_pass(program: List[str], symbol_table: Dict[str, int]) -> Tuple[Dict[str, int], List[str]]:
     """first_pass constructs mappings for labels
 
     Args:
@@ -91,7 +91,7 @@ def parse(
     dst_table: Dict[str, str],
     jmp_table: Dict[str, str],
     symbol_table: Dict[str, int],
-) -> str:
+) -> List[str]:
     """parse converts a line from the Assembly language
     to a string representing a binary HACK machine language
     instruction.

@@ -11,7 +11,7 @@
 // "white" in every pixel;
 // the screen should remain fully clear as long as no key is pressed.
 
-//setup    
+//setup
 (LISTEN)
     @0
     D=A

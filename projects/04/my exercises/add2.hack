@@ -13,4 +13,4 @@
 0000000000000110
 // Select R6
 1110101010000111
-// C A 0 JMP        Jump to A[6]        
+// C A 0 JMP        Jump to A[6]
